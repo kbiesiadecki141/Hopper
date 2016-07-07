@@ -1,3 +1,4 @@
+
 """
 **************************************************
 *                                                *
@@ -31,29 +32,30 @@ from panda3d.bullet import *
 
 from direct.gui.OnscreenText import OnscreenText
 
-class Ocean(object):
+class Platform(object):
 	
-	def __init__(self, render, world, theLoader):
+	def __init__(self, render, world, sizeMap, originMap):
 		self.render = render
 		self.world = world
-		self.loader = theLoader
+
+		self.origin = originMap
+		self.size = sizeMap
 		
-		oceanShape = BulletPlaneShape(Vec3(0, 0, 1), 0)
-		oceanBulletNode = BulletRigidBodyNode("Ocean")
-		oceanBulletNode.addShape(oceanShape)
-		oceanNP = self.render.attachNewNode(oceanBulletNode)
-		oceanNP.setPos(0, 0, 0)
-		self.world.attachRigidBody(oceanBulletNode)
-		oceanModel = self.loader.loadModel("models/square")
-		oceanModel.setScale(1000, 1000, 1)
-		oceanModel.setPos(0, 0, 0)
-		seaTexture = loader.loadTexture("models/Sargasso-sea.png")
-		#seaTexture = loader.loadTexture("models/smallWavesMovie.avi")
-		#seaTexture.setWrapU(Texture.WM_repeat)
-		#seaTexture.setWrapV(Texture.WM_repeat)
-		oceanModel.setTexture(seaTexture, 1)
-		oceanModel.setTexScale(TextureStage.getDefault(), 50, 50)
-		oceanModel.reparentTo(oceanNP)  #error?
+		shape = BulletBoxShape(self.size*0.55) #ITF: Change size*0.55
+		platformBulletNode = self.render.attachNewNode(BulletRigidBodyNode("Platform"))
+		platformBulletNode.node().addShape(shape)
+		platformBulletNode.setPos(self.origin + self.size)
+		platformBulletNode.setCollideMask(BitMask32.allOn())
+
+		platformModel = loader.loadModel("models/ModelCollection/EnvBuildingBlocks/stone-cube/stone.egg")
+		platformModel.reparentTo(platformBulletNode)
+		platformModel.setPos(0, 0, 0)
+		platformModel.setScale(self.size.x * 1.1, self.size.y * 1.1, self.size.z * 0.625)
+		self.world.attachRigidBody(platformBulletNode.node())
+
+
+
+
 
 
 

@@ -45,7 +45,7 @@ class Hopper(object):
 		self.hopperBulletNode = BulletCharacterControllerNode(hopperShape, 0.4, "Hopper")
 		self.hopperNP = self.render.attachNewNode(self.hopperBulletNode)
 		self.hopperNP.setPos(10, 10, 1)
-		self.hopperNP.setH(45)
+		self.hopperNP.setH(90)
 		self.hopperNP.setCollideMask(BitMask32.allOn())
 		self.world.attachCharacter(self.hopperBulletNode)
 
@@ -62,7 +62,7 @@ class Hopper(object):
 
 	def doJump(self):
 		self.hopperBulletNode.setMaxJumpHeight(1.0)
-		self.hopperBulletNode.setJumpSpeed(4.0)
+		self.hopperBulletNode.setJumpSpeed(6.0)
 		self.hopperBulletNode.doJump()
 		self.jumpEffect.play()
 		animationSequence = Sequence(Func(self.playJump), Wait(0.6), Func(self.loopWalking))

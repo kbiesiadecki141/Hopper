@@ -31,6 +31,7 @@ from panda3d.bullet import *
 from direct.gui.OnscreenText import OnscreenText
 from hopper import Hopper
 from oceanWorld import Ocean
+from platform import Platform
 
 class PlayHopper(ShowBase):
 	
@@ -40,7 +41,7 @@ class PlayHopper(ShowBase):
 		
 		#----- Play Music -----
 		backgroundMusic = base.loader.loadSfx("backgroundMusic.wav")
-		backgroundMusic.play()
+		#backgroundMusic.play()
 
 		#----- Setup Bullet World -----
 		self.debugNode = BulletDebugNode("Debug")
@@ -54,6 +55,9 @@ class PlayHopper(ShowBase):
 
 		#----- Setup Visible World -----
 		ocean = Ocean(self.render, self.world, self.loader)
+		platform = Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(2, 3, 0)) 
+		platform2 = Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(-8, 3, 2)) 
+		platform3 = Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(-18, 3, 4)) 
 
 		#----- Setup/Manipulate Hopper -----
 		self.hopper = Hopper(self.render, self.world, base)
@@ -68,7 +72,7 @@ class PlayHopper(ShowBase):
 		
 		#----- Setup Camera -----
 		base.camera.reparentTo(self.hopper.hopperModel)
-		base.camera.setPos(0, 50, 70.0)
+		base.camera.setPos(0, 50, 50.0)
 		base.camera.setH(180)
 		base.camera.lookAt(self.hopper.hopperModel)
 		
@@ -87,8 +91,9 @@ class PlayHopper(ShowBase):
 
 		if inputState.isSet('turnLeft'):   omega = 100
 		if inputState.isSet('turnRight'):  omega = -100
-		if inputState.isSet('accelerate'): speed.setY(1.5)
-		else: speed.setY(1.0)
+		if inputState.isSet('accelerate'): speed.setY(0.5)
+		#temporarily disabled!!! do not forget to undo! This includes the speed above!
+		#else: speed.setY(1.0)
 
 		speed *= 10
 		self.hopper.hopperBulletNode.setAngularMovement (omega)
