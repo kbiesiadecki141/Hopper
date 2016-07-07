@@ -42,8 +42,6 @@ class PlayHopper(ShowBase):
 		backgroundMusic = base.loader.loadSfx("backgroundMusic.wav")
 		backgroundMusic.play()
 
-		# ITF: Create a setup world class!
-		
 		#----- Setup Bullet World -----
 		self.debugNode = BulletDebugNode("Debug")
 		self.debugNode.showWireframe(True)
@@ -58,7 +56,7 @@ class PlayHopper(ShowBase):
 		ocean = Ocean(self.render, self.world, self.loader)
 
 		#----- Setup/Manipulate Hopper -----
-		self.hopper = Hopper(self.render, self.world)
+		self.hopper = Hopper(self.render, self.world, base)
 		inputState.watchWithModifiers('accelerate', 'arrow_up')
 		inputState.watchWithModifiers('turnLeft', 'arrow_left')
 		inputState.watchWithModifiers('turnRight', 'arrow_right')

@@ -31,9 +31,13 @@ from direct.gui.OnscreenText import OnscreenText
 
 class Hopper(object):
 	
-	def __init__(self, render, world):
+	def __init__(self, render, world, base):
 		self.render = render
 		self.world = world
+		self.base = base
+
+		self.jumpEffect = self.base.loader.loadSfx("jump.wav")
+
 		h = 1.75
 		w = 0.4
 		hopperShape = BulletCapsuleShape(w, h - 2 * w, ZUp)
@@ -60,6 +64,7 @@ class Hopper(object):
 		self.hopperBulletNode.setMaxJumpHeight(1.0)
 		self.hopperBulletNode.setJumpSpeed(4.0)
 		self.hopperBulletNode.doJump()
+		self.jumpEffect.play()
 		animationSequence = Sequence(Func(self.playJump), Wait(0.6), Func(self.loopWalking))
 		animationSequence.start()
 
@@ -71,3 +76,7 @@ class Hopper(object):
 
 	def loopRunning(self):
 		self.hopperModel.loop("run")
+
+
+
+
