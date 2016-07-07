@@ -1,7 +1,6 @@
-----------------------------------------------------------------------------------------------
-                                              Hopper
-----------------------------------------------------------------------------------------------
-
+-------------
+ Hopper
+-------------
 Upon creating this repository, GitHub told me that writing a README is good practice. Though
 I've never written nor read one before, I've decided to create one anyway (because, why not).
 
