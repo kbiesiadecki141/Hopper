@@ -49,6 +49,8 @@ class Coin(object):
 		self.world.attachGhost(self.ghostNode)
 		
 		self.coinModel = loader.loadModel("models/mint/Mint.egg") 
+		coinTexture = loader.loadTexture("models/mint/goldCoin.jpg") 
+		self.coinModel.setTexture(coinTexture, 1)
 		self.coinModel.reparentTo(self.coinNP)
 		self.coinModel.setScale(5)
 		self.coinModel.setPos(0, 0, 0)
