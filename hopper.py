@@ -37,6 +37,7 @@ class Hopper(object):
 		self.base = base
 
 		self.jumpEffect = self.base.loader.loadSfx("jump.wav")
+		self.jumpEffect.setVolume(0.5) 
 
 		h = 1.75
 		w = 0.4
@@ -77,6 +78,7 @@ class Hopper(object):
 	def loopRunning(self):
 		self.hopperModel.loop("run")
 
-
+	def getNode(self):
+		return self.hopperNP.node()
 
 

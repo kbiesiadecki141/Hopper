@@ -32,6 +32,7 @@ from direct.gui.OnscreenText import OnscreenText
 from hopper import Hopper
 from oceanWorld import Ocean
 from platform import Platform
+from coin import Coin
 
 class PlayHopper(ShowBase):
 	
@@ -47,17 +48,11 @@ class PlayHopper(ShowBase):
 		self.debugNode = BulletDebugNode("Debug")
 		self.debugNode.showWireframe(True)
 		self.debugNP = self.render.attachNewNode(self.debugNode)
-		self.debugNP.show()
+		#self.debugNP.show()
 
 		self.world = BulletWorld()
 		self.world.setGravity(Vec3(0, 0, -9.81))
 		self.world.setDebugNode(self.debugNP.node())
-
-		#----- Setup Visible World -----
-		ocean = Ocean(self.render, self.world, self.loader)
-		platform = Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(2, 3, 0)) 
-		platform2 = Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(-8, 3, 2)) 
-		platform3 = Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(-18, 3, 4)) 
 
 		#----- Setup/Manipulate Hopper -----
 		self.hopper = Hopper(self.render, self.world, base)
@@ -70,6 +65,17 @@ class PlayHopper(ShowBase):
 		self.accept('arrow_right', self.hopper.loopWalking)
 		self.accept('arrow_left', self.hopper.loopWalking)
 		
+		#----- Setup Visible World -----
+		ocean = Ocean(self.render, self.world, self.loader)
+		
+		x = -2; y = 3; z = 0
+		for i in range(10):
+			Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(x, y, z)) 
+			x -= 12
+			z += 2
+
+		self.coin = Coin(self.render, self.world, self.hopper) #ITF: broaden Coin class
+		
 		#----- Setup Camera -----
 		base.camera.reparentTo(self.hopper.hopperModel)
 		base.camera.setPos(0, 50, 50.0)
@@ -78,7 +84,8 @@ class PlayHopper(ShowBase):
 		
 		#----- Update -----
 		taskMgr.add(self.update, "update")
-	
+		taskMgr.add(self.coin.detectCollisionForGhosts, "detectCoinCollision", uponDeath = self.collectCoin)
+		
 	def update(self, task):
 		self.processInput()
 		dt = globalClock.getDt()
@@ -91,13 +98,19 @@ class PlayHopper(ShowBase):
 
 		if inputState.isSet('turnLeft'):   omega = 100
 		if inputState.isSet('turnRight'):  omega = -100
-		if inputState.isSet('accelerate'): speed.setY(0.5)
+		if inputState.isSet('accelerate'): speed.setY(0.6)
 		#temporarily disabled!!! do not forget to undo! This includes the speed above!
-		#else: speed.setY(1.0)
+		#else: speed.setY(0.5)
 
 		speed *= 10
 		self.hopper.hopperBulletNode.setAngularMovement (omega)
 		self.hopper.hopperBulletNode.setLinearMovement(speed, True)
+	
+	def collectCoin(self, task):
+		chaChing = base.loader.loadSfx("coinCollect.wav")
+		chaChing.setVolume(1)
+		chaChing.play()
+		self.coin.removeCoin()
 
 game = PlayHopper()
 game.run()
