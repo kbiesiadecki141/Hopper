@@ -33,18 +33,20 @@ from direct.gui.OnscreenText import OnscreenText
 
 class Coin(object):
 	
-	def __init__(self, render, world, hopper):#, coinValue):
+	def __init__(self, render, world, hopper, coinValue, radius, height, posMap):
 		self.render = render
 		self.world = world
 		self.hopper = hopper
-		radius = 0.35
-		height = 0.35
+		self.coinValue = coinValue
+		self.radius = radius
+		self.height = height
+
 		self.coinShape = BulletCylinderShape(radius, height, ZUp)
 		self.ghostNode = BulletGhostNode("Coin")
 		self.ghostNode.addShape(self.coinShape)
 		self.coinNP = self.render.attachNewNode(self.ghostNode)
 		self.coinNP.setCollideMask(BitMask32.allOff())
-		self.coinNP.setPos(3, 10, 3) #ITF: add to args
+		self.coinNP.setPos(posMap) #ITF: add to args
 		self.coinNP.setR(90)
 		self.world.attachGhost(self.ghostNode)
 		
@@ -55,14 +57,12 @@ class Coin(object):
 		self.coinModel.setScale(5)
 		self.coinModel.setPos(0, 0, 0)
 	
-	def detectCollisionForGhosts(self, task):
-		# contactTestPair returns a BulletContactResult object
-		contactResult = self.world.contactTestPair(self.hopper.getNode(), self.ghostNode) 
-		if len(contactResult.getContacts()) > 0:
-			print "Hopper is in contact with: ", self.ghostNode.getName()
-			return task.done
-		else:
-			return task.cont
+	
+	def collectCoin(self, task):
+		chaChing = base.loader.loadSfx("coinCollect.wav")
+		chaChing.setVolume(1)
+		chaChing.play()
+		self.removeCoin()
 	
 	def removeCoin(self):
 		self.coinNP.detach_node()
