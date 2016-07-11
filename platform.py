@@ -42,16 +42,21 @@ class Platform(object):
 		self.size = sizeMap
 		
 		shape = BulletBoxShape(self.size*0.55) #ITF: Change size*0.55
-		platformBulletNode = self.render.attachNewNode(BulletRigidBodyNode("Platform"))
-		platformBulletNode.node().addShape(shape)
-		platformBulletNode.setPos(self.origin + self.size)
-		platformBulletNode.setCollideMask(BitMask32.allOn())
+		self.platformBulletNode = self.render.attachNewNode(BulletRigidBodyNode("Platform"))
+		self.platformBulletNode.node().addShape(shape)
+		self.platformBulletNode.setPos(self.origin + self.size)
+		self.platformBulletNode.setCollideMask(BitMask32.allOn())
 
-		platformModel = loader.loadModel("models/ModelCollection/EnvBuildingBlocks/stone-cube/stone.egg")
-		platformModel.reparentTo(platformBulletNode)
-		platformModel.setPos(0, 0, 0)
-		platformModel.setScale(self.size.x * 1.1, self.size.y * 1.1, self.size.z * 0.625)
-		self.world.attachRigidBody(platformBulletNode.node())
+		self.platformModel = loader.loadModel("models/ModelCollection/EnvBuildingBlocks/stone-cube/stone.egg")
+		self.platformModel.reparentTo(self.platformBulletNode)
+		self.platformModel.setPos(0, 0, 0)
+		self.platformModel.setScale(self.size.x * 1.1, self.size.y * 1.1, self.size.z * 0.625)
+		vt = TextureStage('volcanicTex')
+		vt.setMode(TextureStage.MNormal)
+		volcanicTex = loader.loadTexture("models/volcanicAsh.jpg")
+		self.platformModel.setTexture(volcanicTex, 1) #vt, volcTex
+		
+		self.world.attachRigidBody(self.platformBulletNode.node())
 
 
 

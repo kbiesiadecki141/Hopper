@@ -54,10 +54,9 @@ class Coin(object):
 		coinTexture = loader.loadTexture("models/mint/goldCoin.jpg") 
 		self.coinModel.setTexture(coinTexture, 1)
 		self.coinModel.reparentTo(self.coinNP)
-		self.coinModel.setScale(5)
+		self.coinModel.setScale(14.286*radius)
 		self.coinModel.setPos(0, 0, 0)
-	
-	
+		
 	def collectCoin(self, task):
 		chaChing = base.loader.loadSfx("coinCollect.wav")
 		chaChing.setVolume(1)

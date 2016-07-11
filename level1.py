@@ -57,10 +57,19 @@ class PlayHopper(ShowBase):
 		self.world.setGravity(Vec3(0, 0, -9.81))
 		self.world.setDebugNode(self.debugNP.node())
 
+		#----- State Variables -----
+		self.isHelping = False
+
 		#----- Setup/Manipulate Hopper -----
+		#-- Health --
+		#frame = DirectFrame(frameSize = (-1,2.5,-0.2,1),frameColor = (0, 0, 0, 0.5), pos = (-1, 1, 1))
+		bar = DirectWaitBar(text = "", value = 100, range = 100, pos = (-0.85, 0.93, 0.93), scale = 0.4)
+		healthText = OnscreenText(text = "Health", parent = bar, pos = (-0.77, -0.23, -0.23), bg = (0,0,0,1), fg = (1,1,1,1), scale = 0.15)
+		#--ITF: add black frame around wait bar---
+
 		self.hopper = Hopper(self.render, self.world, base)
 		self.freeze = False
-		inputState.watchWithModifiers('accelerate', 'arrow_up')
+		inputState.watchWithModifiers('accelerate', 'arrow_up') #----- ITF: move to hopper class -----
 		inputState.watchWithModifiers('turnLeft', 'arrow_left')
 		inputState.watchWithModifiers('turnRight', 'arrow_right')
 		self.accept('space', self.hopper.doJump)
@@ -68,19 +77,26 @@ class PlayHopper(ShowBase):
 		self.accept('arrow_up-up', self.hopper.loopWalking)
 		self.accept('arrow_right', self.hopper.loopWalking)
 		self.accept('arrow_left', self.hopper.loopWalking)
+		self.accept('h', self.toggleHelp)
 		
 		#----- Setup Visible World -----
 		ocean = Ocean(self.render, self.world, self.loader, self.hopper)
 		
 		x = -2; y = 3; z = 0
-		for i in range(10):
-			Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(x, y, z)) 
+		platform = Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(x, y, z)) 
+		for i in range(3):
+			platform = Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(x, y, z)) 
 			x -= 12
 			z += 2
 
 		self.coin = Coin(self.render, self.world, self.hopper, 10, 0.35, 0.35, Vec3(3, 10, 3)) #ITF: broaden Coin class
-		#self.endToken = Coin(self.render, self.world, self.hopper, 0.6, 0.6, Vec3(3, 20, 5))
-
+		self.endToken = Coin(self.render, self.world, self.hopper, 0, 0.6, 0.6, Vec3(0, 0, 1))
+		self.endToken.coinNP.reparentTo(platform.platformBulletNode)
+		
+		#myFog = Fog("Fog Name")
+		#myFog.setColor(0.5, 0.5, 0.5)
+		#myFog.setExpDensity(0.003)
+		#self.render.setFog(myFog)
 		#-----  Misc. -----
 		self.amount = 0
 
@@ -95,11 +111,10 @@ class PlayHopper(ShowBase):
 		taskMgr.add(self.update, "update")
 		taskMgr.add(self.simulateWater, "simulateWater", uponDeath = self.fail)
 		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.coin], appendTask = True, uponDeath = self.coin.collectCoin)
-		#taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", uponDeath = self.coin.collectCoin)
+		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.endToken], appendTask = True, uponDeath = self.levelClear)
 		
 	def update(self, task):
 		self.processInput()
-		self.displayWallet()
 		dt = globalClock.getDt()
 		self.world.doPhysics(dt, 10, 1/180.0)
 		return task.cont
@@ -120,7 +135,8 @@ class PlayHopper(ShowBase):
 		self.hopper.hopperBulletNode.setLinearMovement(speed, True)
 
 	def displayWallet(self):
-		self.wallet = OnscreenText(text = "Wallet: "+str(self.amount), pos = (-1.1, -0.9), bg = (1, 1, 1, 1), align = TextNode.ALeft)
+		#---ITF: beautify this ----
+		self.wallet = OnscreenText(text = "Wallet: "+str(self.amount), pos = (-1.1, -0.9), bg = (1, 1, 1, 1), align = TextNode.ACenter, mayChange = True)
 
 	def detectCollisionForGhosts(self, coin, task):
 		# contactTestPair returns a BulletContactResult object
@@ -128,7 +144,7 @@ class PlayHopper(ShowBase):
 		if len(contactResult.getContacts()) > 0:
 			print "Hopper is in contact with: ", coin.ghostNode.getName()
 			self.amount += coin.coinValue
-			self.wallet.destroy()
+			self.displayWallet()
 			return task.done
 		else:
 			return task.cont
@@ -145,6 +161,21 @@ class PlayHopper(ShowBase):
 			return task.cont
 
 	def reset(self):
+		self.c.destroy()
+		self.hopper.hopperNP.setPos(10, 10, 1)
+		self.hopper.hopperNP.setH(90)
+		self.coin.coinNP = self.render.attachNewNode(self.coin.ghostNode)
+		self.backgroundMusic.play()
+		self.failSound.stop()
+		self.freeze = False
+		self.amount = 0
+		self.displayWallet()
+		taskMgr.add(self.simulateWater, "simulateWater", uponDeath = self.fail)
+		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.coin], appendTask = True, uponDeath = self.coin.collectCoin)
+		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.endToken], appendTask = True, uponDeath = self.levelClear)
+	
+	def replay(self):
+		self.q.destroy()
 		self.b.destroy()
 		self.hopper.hopperNP.setPos(10, 10, 1)
 		self.hopper.hopperNP.setH(90)
@@ -152,15 +183,51 @@ class PlayHopper(ShowBase):
 		self.backgroundMusic.play()
 		self.failSound.stop()
 		self.freeze = False
+		self.amount = 0
+		self.displayWallet()
 		taskMgr.add(self.simulateWater, "simulateWater", uponDeath = self.fail)
-		taskMgr.add(self.coin.detectCollisionForGhosts, "detectCoinCollision", uponDeath = self.coin.collectCoin)
+		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.coin], appendTask = True, uponDeath = self.coin.collectCoin)
+		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.endToken], appendTask = True, uponDeath = self.levelClear)
+	
+	def levelClear(self, task):
+		#Hooray! Level 2 unlocked
+		#Menu options:
+		# - Main Menu
+		# - Quit
+		# - Play Again
+		# - Next Level
+		self.freeze = True	
+		self.q = DirectButton(text = ("Quit", "Quit", "Quit", "disabled"), scale = .08, pos = (0, 0, -0.2), command = self.quit)
+		self.q.resetFrameSize()
+	 	self.b = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, -0.3) , command = self.replay)
+		self.b.resetFrameSize()
 
+	def quit(self):
+		sys.exit()	
+	
 	def fail(self, task):
 		self.backgroundMusic.stop()
 		self.failSound.play()
-		self.b = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .05, command = self.reset)
-		self.b.resetFrameSize()
+		self.c = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, 0) , command = self.reset)
+		self.c.resetFrameSize()
+	
+	def getHelp(self):
+		self.walk = self.addInstructions(0.7, "[Up Arrow]: ")
+	
+	def destroyHelp(self):
+		self.walk.destroy()
 
+	def addInstructions(self, pos, msg):
+		return OnscreenText(text = msg, style = 1, fg = (1, 1, 1, 1), pos = (0, pos), align= TextNode.ACenter, scale = .05)
+
+	def toggleHelp(self):
+		if self.isHelping == False:
+			self.getHelp()
+			self.isHelping = True
+		else:
+			self.destroyHelp()
+			self.isHelping = False
+			
 
 game = PlayHopper()
 game.run()
