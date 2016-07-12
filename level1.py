@@ -35,38 +35,30 @@ from hopper import Hopper
 from oceanWorld import Ocean
 from platform import Platform
 from coin import Coin
-
+from level1World import Level1World
 class PlayHopper(ShowBase):
 	
 	def __init__(self):
 		ShowBase.__init__(self)
-		base.disableMouse()
-		
-		#----- Play Music -----
-		self.backgroundMusic = base.loader.loadSfx("backgroundMusic.wav")
-		self.backgroundMusic.play()
-		self.failSound = base.loader.loadSfx("fail.wav")
-
 		#----- Setup Bullet World -----
 		self.debugNode = BulletDebugNode("Debug")
 		self.debugNode.showWireframe(True)
 		self.debugNP = self.render.attachNewNode(self.debugNode)
 		#self.debugNP.show()
 
-		self.world = BulletWorld()
-		self.world.setGravity(Vec3(0, 0, -9.81))
-		self.world.setDebugNode(self.debugNP.node())
-
+		self.bulletWorld = BulletWorld()
+		self.bulletWorld.setGravity(Vec3(0, 0, -9.81))
+		self.bulletWorld.setDebugNode(self.debugNP.node())
+		
 		#----- State Variables -----
 		self.isHelping = False
+		self.amount = 0
 		self.isLit = False
 		#----- Setup/Manipulate Hopper -----
 
-		self.hopper = Hopper(self.render, self.world, base)
-		self.freeze = False
-		inputState.watchWithModifiers('accelerate', 'arrow_up') #----- ITF: move to hopper class -----
-		inputState.watchWithModifiers('turnLeft', 'arrow_left')
-		inputState.watchWithModifiers('turnRight', 'arrow_right')
+		self.hopper = Hopper(self.render, self.bulletWorld, base)
+		self.world = Level1World(self.render, self.loader, base, self.bulletWorld, self.hopper) 
+		#self.freeze = False
 		self.accept('space', self.hopper.doJump)
 		self.accept('arrow_up', self.hopper.loopRunning)
 		self.accept('arrow_up-up', self.hopper.loopWalking)
@@ -74,66 +66,24 @@ class PlayHopper(ShowBase):
 		self.accept('arrow_left', self.hopper.loopWalking)
 		self.accept('h', self.toggleHelp)
 		self.accept('l', self.toggleLight)
-		#----- Setup Visible World -----
-		ocean = Ocean(self.render, self.world, self.loader, self.hopper)
 		
-		x = -2; y = 3; z = 0
-		platform = Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(x, y, z)) 
-		for i in range(20):
-			platform = Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(x, y, z)) 
-			x -= 12
-			z += 2
-
-		self.coin = Coin(self.render, self.world, self.hopper, 10, 0.35, 0.35, Vec3(3, 10, 3)) #ITF: broaden Coin class
-		#self.berry10 = Berry(self.render, self.world, self.hopper, 10, 0.35, 0.35, Vec3(3, 10, 3)) 
-		self.endToken = Coin(self.render, self.world, self.hopper, 0, 0.6, 0.6, Vec3(0, 0, 1))
-		self.endToken.coinNP.reparentTo(platform.platformBulletNode)
-		
-		#myFog = Fog("Fog Name")
-		#myFog.setColor(0.5, 0.5, 0.5)
-		#myFog.setExpDensity(0.003)
-		#self.render.setFog(myFog)
-		#-----  Misc. -----
-		self.amount = 0
-
-		#----- Setup Camera -----
-		base.camera.reparentTo(self.hopper.hopperModel)
-		
-		base.camera.setPos(0, 50, 50)#150.0)
-		base.camera.setH(180)
-		base.camera.lookAt(self.hopper.hopperModel)
+		self.isFatiguing = True
 		
 		#----- Update -----
-		taskMgr.add(self.update, "update")
-		taskMgr.doMethodLater(3, self.fatigue, "fatigue")
-		taskMgr.add(self.simulateWater, "simulateWater", uponDeath = self.fail)
-		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.coin], appendTask = True, uponDeath = self.coin.collectCoin)
-		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.endToken], appendTask = True, uponDeath = self.levelClear)
+		taskMgr.add(self.world.update, "update")
+		taskMgr.doMethodLater(3, self.fatigue, "fatigue", uponDeath = self.die)
+		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
+		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.world.coin], appendTask = True, uponDeath = self.world.coin.collectCoin)
+		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 		
 	def fatigue(self, task):
 		self.hopper.lowerHealth(2)
-		return task.again
-
-	def update(self, task):
-		self.processInput()
-		dt = globalClock.getDt()
-		self.world.doPhysics(dt, 10, 1/180.0)
-		return task.cont
-
-	def processInput(self):
-		speed = Vec3(0, 0, 0)
-		omega = 0
-		
-		if self.freeze == False:
-			if inputState.isSet('turnLeft'):   omega = 100
-			if inputState.isSet('turnRight'):  omega = -100
-			if inputState.isSet('accelerate'): speed.setY(0.6)
-			#temporarily disabled!!! do not forget to undo! This includes the speed above!
-			else: speed.setY(0.5)
-		
-		speed *= 10
-		self.hopper.hopperBulletNode.setAngularMovement (omega)
-		self.hopper.hopperBulletNode.setLinearMovement(speed, True)
+		if self.hopper.getHealth() == 0:
+			self.isFatiguing = False
+			return task.done
+		else:
+			self.isFatiguing = True
+			return task.again
 
 	def displayWallet(self):
 		#---ITF: beautify this ----
@@ -141,7 +91,7 @@ class PlayHopper(ShowBase):
 
 	def detectCollisionForGhosts(self, coin, task):
 		# contactTestPair returns a BulletContactResult object
-		contactResult = self.world.contactTestPair(self.hopper.getNode(), coin.ghostNode) 
+		contactResult = self.bulletWorld.contactTestPair(self.hopper.getNode(), coin.ghostNode) 
 		if len(contactResult.getContacts()) > 0:
 			print "Hopper is in contact with: ", coin.ghostNode.getName()
 			self.amount += coin.coinValue
@@ -150,31 +100,21 @@ class PlayHopper(ShowBase):
 		else:
 			return task.cont
 	
-	#----- Add more comments for blocks of code (e.g. these are for tasks, etc.) -----
-	#----- Broken (ITF: Fix) -----
-	def simulateWater(self, task):
-		#self.hopper.hopperBulletNode.applyForce(Vec3(0, 0, 10))
-		if self.hopper.hopperNP.getZ() < 0:
-		#	self.hopper.hopperBulletNode.setLinearMovement(speed, True)	
-			self.freeze = True
-			return task.done
-		else:
-			return task.cont
-
 	def reset(self):
 		self.c.destroy()
 		self.hopper.hopperNP.setPos(10, 10, 1)
 		self.hopper.hopperNP.setH(90)
 		self.hopper.resetHealth()
-		self.coin.coinNP = self.render.attachNewNode(self.coin.ghostNode)
-		self.backgroundMusic.play()
-		self.failSound.stop()
-		self.freeze = False
+		self.hopper.loopWalking()
+		self.world.coin.coinNP = self.render.attachNewNode(self.world.coin.ghostNode)
+		self.world.backgroundMusic.play()
+		self.world.failSound.stop()
+		self.world.freeze = False
 		self.amount = 0
 		self.displayWallet()
-		taskMgr.add(self.simulateWater, "simulateWater", uponDeath = self.fail)
-		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.coin], appendTask = True, uponDeath = self.coin.collectCoin)
-		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.endToken], appendTask = True, uponDeath = self.levelClear)
+		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
+		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.world.coin], appendTask = True, uponDeath = self.world.coin.collectCoin)
+		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 	
 	def replay(self):
 		self.q.destroy()
@@ -182,15 +122,16 @@ class PlayHopper(ShowBase):
 		self.hopper.hopperNP.setPos(10, 10, 1)
 		self.hopper.hopperNP.setH(90)
 		self.hopper.resetHealth()
-		self.coin.coinNP = self.render.attachNewNode(self.coin.ghostNode)
-		self.backgroundMusic.play()
-		self.failSound.stop()
-		self.freeze = False
+		self.hopper.loopWalking()
+		self.world.coin.coinNP = self.render.attachNewNode(self.world.coin.ghostNode)
+		self.world.backgroundMusic.play()
+		self.world.failSound.stop()
+		self.world.freeze = False
 		self.amount = 0
 		self.displayWallet()
-		taskMgr.add(self.simulateWater, "simulateWater", uponDeath = self.fail)
-		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.coin], appendTask = True, uponDeath = self.coin.collectCoin)
-		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.endToken], appendTask = True, uponDeath = self.levelClear)
+		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
+		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.world.coin], appendTask = True, uponDeath = self.world.coin.collectCoin)
+		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 	
 	def levelClear(self, task):
 		#Hooray! Level 2 unlocked
@@ -199,7 +140,7 @@ class PlayHopper(ShowBase):
 		# - Quit
 		# - Play Again
 		# - Next Level
-		self.freeze = True	
+		self.world.freeze = True	
 		self.q = DirectButton(text = ("Quit", "Quit", "Quit", "disabled"), scale = .08, pos = (0, 0, -0.2), command = self.quit)
 		self.q.resetFrameSize()
 	 	self.b = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, -0.3) , command = self.replay)
@@ -209,8 +150,17 @@ class PlayHopper(ShowBase):
 		sys.exit()	
 	
 	def fail(self, task):
-		self.backgroundMusic.stop()
-		self.failSound.play()
+		self.world.freeze = True
+		self.world.backgroundMusic.stop()
+		self.world.failSound.play()
+		self.c = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, 0) , command = self.reset)
+		self.c.resetFrameSize()
+	
+	def die(self, task):
+		self.world.freeze = True
+		self.world.backgroundMusic.stop()
+		self.world.failSound.play()
+		taskMgr.doMethodLater(0.5, self.fatigue, "fatigue", uponDeath = self.fail)
 		self.c = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, 0) , command = self.reset)
 		self.c.resetFrameSize()
 	
@@ -233,41 +183,14 @@ class PlayHopper(ShowBase):
 			
 	def toggleLight(self):
 		if self.isLit == False:
-			self.addLight()
+			self.world.freeze = True
+			self.world.addLight()
 			self.isLit = True
+			unfreezeSeq = Sequence(Wait(2.0), Func(self.world.unfreeze))
+			unfreezeSeq.start()
 		else:
-			self.destroyLight()
+			self.world.destroyLight()
 			self.isLit = False
-	
-	def addLight(self):
-		self.dlight = DirectionalLight('dlight')
-		self.dlight.setColor(VBase4(0.9, 0.9, 0.8, 1))
-		self.dlnp = self.render.attachNewNode(self.dlight)
-		self.dlnp.setHpr(90, -30, 0)
-		self.render.setLight(self.dlnp)
-		
-		slight = Spotlight('slight')
-		slens = PerspectiveLens()
-		slight.setLens(slens)
-		slight.setColor(Vec4(1, 1, 1, 1))
-		slight.setShadowCaster(True)
-		slnp = self.render.attachNewNode(slight)
-		slnp.reparentTo(self.hopper.hopperNP)
-		slnp.setPos(0, 40, 50)
-		slnp.lookAt(self.hopper.hopperNP)
-		self.render.setLight(slnp)
-
-		self.render.setShaderAuto()
-
-		alight = AmbientLight('alight')
-		alight.setColor(VBase4(0.3, 0.3, 0.5, 1))
-		self.alnp = self.render.attachNewNode(alight)
-		self.render.setLight(self.alnp)
-
-	def destroyLight(self):
-		self.render.clearLight(self.dlnp)
-		self.render.clearLight(self.alnp)
-
 game = PlayHopper()
 game.run()
 

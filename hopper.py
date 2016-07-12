@@ -85,6 +85,9 @@ class Hopper(object):
 
 	def loopRunning(self):
 		self.hopperModel.loop("run")
+	
+	def stand(self):
+		self.hopperModel.pose("walk", 6)
 
 	def getNode(self):
 		return self.hopperNP.node()
@@ -103,6 +106,9 @@ class Hopper(object):
 
 	def resetHealth(self):
 		self.health['value'] = 100
+
+	def getHealth(self):
+		return self.health['value']
 
 
 
