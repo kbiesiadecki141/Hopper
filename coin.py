@@ -40,7 +40,7 @@ class Coin(object):
 		self.coinValue = coinValue
 		self.radius = radius
 		self.height = height
-
+		
 		self.coinShape = BulletCylinderShape(radius, height, ZUp)
 		self.ghostNode = BulletGhostNode("Coin")
 		self.ghostNode.addShape(self.coinShape)
@@ -50,13 +50,18 @@ class Coin(object):
 		self.coinNP.setR(90)
 		self.world.attachGhost(self.ghostNode)
 		
+		material = Material()
+		material.setShininess(5.0)
+		material.setAmbient((1, 1, 0, 1))
+	
 		self.coinModel = loader.loadModel("models/mint/Mint.egg") 
 		coinTexture = loader.loadTexture("models/mint/goldCoin.jpg") 
 		self.coinModel.setTexture(coinTexture, 1)
 		self.coinModel.reparentTo(self.coinNP)
 		self.coinModel.setScale(14.286*radius)
 		self.coinModel.setPos(0, 0, 0)
-		
+		self.coinModel.setMaterial(material)
+
 	def collectCoin(self, task):
 		chaChing = base.loader.loadSfx("coinCollect.wav")
 		chaChing.setVolume(1)

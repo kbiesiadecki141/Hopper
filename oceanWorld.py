@@ -42,7 +42,6 @@ class Ocean(object):
 		self.liquid = self.loader.loadModel("models/misc/rgbCube")
 		self.liquid.setScale(1000, 1000, 30)
 		self.liquid.setPos(0, 0, -15)
-		# self.liquid.clearColor()
 		self.liquid.setTransparency(TransparencyAttrib.MAlpha)
 		self.liquid.setAlphaScale(0.7)
 		self.liquid.reparentTo(self.render)
@@ -63,8 +62,6 @@ class Ocean(object):
 		oceanModel.setTexture(seaTexture, 1)
 		oceanModel.setTexScale(TextureStage.getDefault(), 50, 50)
 		oceanModel.reparentTo(oceanNP)  #error?
-
-
 
 
 

@@ -51,7 +51,7 @@ class PlayHopper(ShowBase):
 		self.debugNode = BulletDebugNode("Debug")
 		self.debugNode.showWireframe(True)
 		self.debugNP = self.render.attachNewNode(self.debugNode)
-		self.debugNP.show()
+		#self.debugNP.show()
 
 		self.world = BulletWorld()
 		self.world.setGravity(Vec3(0, 0, -9.81))
@@ -59,13 +59,8 @@ class PlayHopper(ShowBase):
 
 		#----- State Variables -----
 		self.isHelping = False
-
+		self.isLit = False
 		#----- Setup/Manipulate Hopper -----
-		#-- Health --
-		#frame = DirectFrame(frameSize = (-1,2.5,-0.2,1),frameColor = (0, 0, 0, 0.5), pos = (-1, 1, 1))
-		bar = DirectWaitBar(text = "", value = 100, range = 100, pos = (-0.85, 0.93, 0.93), scale = 0.4)
-		healthText = OnscreenText(text = "Health", parent = bar, pos = (-0.77, -0.23, -0.23), bg = (0,0,0,1), fg = (1,1,1,1), scale = 0.15)
-		#--ITF: add black frame around wait bar---
 
 		self.hopper = Hopper(self.render, self.world, base)
 		self.freeze = False
@@ -78,18 +73,19 @@ class PlayHopper(ShowBase):
 		self.accept('arrow_right', self.hopper.loopWalking)
 		self.accept('arrow_left', self.hopper.loopWalking)
 		self.accept('h', self.toggleHelp)
-		
+		self.accept('l', self.toggleLight)
 		#----- Setup Visible World -----
 		ocean = Ocean(self.render, self.world, self.loader, self.hopper)
 		
 		x = -2; y = 3; z = 0
 		platform = Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(x, y, z)) 
-		for i in range(3):
+		for i in range(20):
 			platform = Platform(self.render, self.world, Vec3(9, 7, 0.5), Point3(x, y, z)) 
 			x -= 12
 			z += 2
 
 		self.coin = Coin(self.render, self.world, self.hopper, 10, 0.35, 0.35, Vec3(3, 10, 3)) #ITF: broaden Coin class
+		#self.berry10 = Berry(self.render, self.world, self.hopper, 10, 0.35, 0.35, Vec3(3, 10, 3)) 
 		self.endToken = Coin(self.render, self.world, self.hopper, 0, 0.6, 0.6, Vec3(0, 0, 1))
 		self.endToken.coinNP.reparentTo(platform.platformBulletNode)
 		
@@ -109,10 +105,15 @@ class PlayHopper(ShowBase):
 		
 		#----- Update -----
 		taskMgr.add(self.update, "update")
+		taskMgr.doMethodLater(3, self.fatigue, "fatigue")
 		taskMgr.add(self.simulateWater, "simulateWater", uponDeath = self.fail)
 		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.coin], appendTask = True, uponDeath = self.coin.collectCoin)
 		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.endToken], appendTask = True, uponDeath = self.levelClear)
 		
+	def fatigue(self, task):
+		self.hopper.lowerHealth(2)
+		return task.again
+
 	def update(self, task):
 		self.processInput()
 		dt = globalClock.getDt()
@@ -164,6 +165,7 @@ class PlayHopper(ShowBase):
 		self.c.destroy()
 		self.hopper.hopperNP.setPos(10, 10, 1)
 		self.hopper.hopperNP.setH(90)
+		self.hopper.resetHealth()
 		self.coin.coinNP = self.render.attachNewNode(self.coin.ghostNode)
 		self.backgroundMusic.play()
 		self.failSound.stop()
@@ -179,6 +181,7 @@ class PlayHopper(ShowBase):
 		self.b.destroy()
 		self.hopper.hopperNP.setPos(10, 10, 1)
 		self.hopper.hopperNP.setH(90)
+		self.hopper.resetHealth()
 		self.coin.coinNP = self.render.attachNewNode(self.coin.ghostNode)
 		self.backgroundMusic.play()
 		self.failSound.stop()
@@ -228,6 +231,42 @@ class PlayHopper(ShowBase):
 			self.destroyHelp()
 			self.isHelping = False
 			
+	def toggleLight(self):
+		if self.isLit == False:
+			self.addLight()
+			self.isLit = True
+		else:
+			self.destroyLight()
+			self.isLit = False
+	
+	def addLight(self):
+		self.dlight = DirectionalLight('dlight')
+		self.dlight.setColor(VBase4(0.9, 0.9, 0.8, 1))
+		self.dlnp = self.render.attachNewNode(self.dlight)
+		self.dlnp.setHpr(90, -30, 0)
+		self.render.setLight(self.dlnp)
+		
+		slight = Spotlight('slight')
+		slens = PerspectiveLens()
+		slight.setLens(slens)
+		slight.setColor(Vec4(1, 1, 1, 1))
+		slight.setShadowCaster(True)
+		slnp = self.render.attachNewNode(slight)
+		slnp.reparentTo(self.hopper.hopperNP)
+		slnp.setPos(0, 40, 50)
+		slnp.lookAt(self.hopper.hopperNP)
+		self.render.setLight(slnp)
+
+		self.render.setShaderAuto()
+
+		alight = AmbientLight('alight')
+		alight.setColor(VBase4(0.3, 0.3, 0.5, 1))
+		self.alnp = self.render.attachNewNode(alight)
+		self.render.setLight(self.alnp)
+
+	def destroyLight(self):
+		self.render.clearLight(self.dlnp)
+		self.render.clearLight(self.alnp)
 
 game = PlayHopper()
 game.run()

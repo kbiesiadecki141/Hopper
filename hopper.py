@@ -28,6 +28,8 @@ from panda3d.core import *
 from panda3d.bullet import *
 
 from direct.gui.OnscreenText import OnscreenText
+from direct.gui.DirectGui import *
+from direct.gui.OnscreenText import OnscreenText
 
 class Hopper(object):
 	
@@ -39,6 +41,12 @@ class Hopper(object):
 		self.jumpEffect = self.base.loader.loadSfx("jump.wav")
 		self.jumpEffect.setVolume(0.5) 
 
+		#-- Health --
+		#frame = DirectFrame(frameSize = (-1,2.5,-0.2,1),frameColor = (0, 0, 0, 0.5), pos = (-1, 1, 1))
+		self.health = DirectWaitBar(text = "", value = 100, range = 100, pos = (-0.85, 0.93, 0.93), scale = 0.4)
+		healthText = OnscreenText(text = "Health", parent = self.health, pos = (-0.77, -0.23, -0.23), bg = (0,0,0,1), fg = (1,1,1,1), scale = 0.15)
+		#--ITF: add black frame around wait bar---
+		
 		h = 1.75
 		w = 0.4
 		hopperShape = BulletCapsuleShape(w, h - 2 * w, ZUp)
@@ -80,5 +88,24 @@ class Hopper(object):
 
 	def getNode(self):
 		return self.hopperNP.node()
+
+	def boostHealth(self, boostVal):
+		if (self.health['value'] + boostVal) <= 100:
+			self.health['value'] += boostVal
+		else:
+			self.health['value'] = 100
+
+	def lowerHealth(self, damage):
+		if (self.health['value'] + damage) >= 0:
+			self.health['value'] -= damage
+		else:
+			self.health['value'] = 0
+
+	def resetHealth(self):
+		self.health['value'] = 100
+
+
+
+
 
 
