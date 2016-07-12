@@ -71,9 +71,11 @@ class PlayHopper(ShowBase):
 		
 		#----- Update -----
 		taskMgr.add(self.world.update, "update")
+		taskMgr.add(self.world.berry10.spinBerry, "spinBerry")
 		taskMgr.doMethodLater(3, self.fatigue, "fatigue", uponDeath = self.die)
 		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
 		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.world.coin], appendTask = True, uponDeath = self.world.coin.collectCoin)
+		taskMgr.add(self.detectCollisionForGhosts, "detectBerryCollision", extraArgs = [self.world.berry10], appendTask = True, uponDeath = self.world.berry10.collectBerry)
 		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 		
 	def fatigue(self, task):
@@ -89,13 +91,17 @@ class PlayHopper(ShowBase):
 		#---ITF: beautify this ----
 		self.wallet = OnscreenText(text = "Wallet: "+str(self.amount), pos = (-1.1, -0.9), bg = (1, 1, 1, 1), align = TextNode.ACenter, mayChange = True)
 
-	def detectCollisionForGhosts(self, coin, task):
+	def detectCollisionForGhosts(self, item, task):
 		# contactTestPair returns a BulletContactResult object
-		contactResult = self.bulletWorld.contactTestPair(self.hopper.getNode(), coin.ghostNode) 
+		contactResult = self.bulletWorld.contactTestPair(self.hopper.getNode(), item.ghostNode) 
 		if len(contactResult.getContacts()) > 0:
-			print "Hopper is in contact with: ", coin.ghostNode.getName()
-			self.amount += coin.coinValue
-			self.displayWallet()
+			print "Hopper is in contact with: ", item.ghostNode.getName()
+			if task.name == "detectCoinCollision" or task.name == "detectEndCoinCollision":
+				self.amount += item.coinValue
+				self.displayWallet()
+			else:
+				self.hopper.boostHealth(10)
+				
 			return task.done
 		else:
 			return task.cont

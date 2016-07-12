@@ -35,6 +35,7 @@ from hopper import Hopper
 from oceanWorld import Ocean
 from platform import Platform
 from coin import Coin
+from berry import Berry
 
 class Level1World(object):
 	
@@ -71,7 +72,7 @@ class Level1World(object):
 			z += 2
 
 		self.coin = Coin(self.render, self.world, self.hopper, 10, 0.35, 0.35, Vec3(3, 10, 3)) #ITF: broaden Coin class
-		#self.berry10 = Berry(self.render, self.world, self.hopper, 10, 0.35, 0.35, Vec3(3, 10, 3)) 
+		self.berry10 = Berry(self.render, self.world, self.hopper, 10, 0.35, 0.35, Vec3(5, 10, 3)) 
 		self.endToken = Coin(self.render, self.world, self.hopper, 0, 0.6, 0.6, Vec3(0, 0, 1))
 		self.endToken.coinNP.reparentTo(platform.platformBulletNode)
 		
@@ -83,7 +84,7 @@ class Level1World(object):
 		#----- Setup Camera -----
 		base.camera.reparentTo(self.hopper.hopperModel)
 		
-		base.camera.setPos(0, 50, 50)#150.0)
+		base.camera.setPos(0, 60, 50)#150.0)
 		base.camera.setH(180)
 		base.camera.lookAt(self.hopper.hopperModel)
 		
@@ -104,7 +105,7 @@ class Level1World(object):
 			if inputState.isSet('turnRight'):  omega = -100
 			if inputState.isSet('accelerate'): speed.setY(0.6)
 			#temporarily disabled!!! do not forget to undo! This includes the speed above!
-			else: speed.setY(0.5)
+			#else: speed.setY(0.5)
 		else:
 			self.hopper.stand()
 		
@@ -157,7 +158,7 @@ class Level1World(object):
 		slight.setShadowCaster(True)
 
 		alight = AmbientLight('alight')
-		alight.setColor(VBase4(0.3, 0.3, 0.5, 1))
+		alight.setColor(VBase4(0.5, 0.5, 0.7, 1))
 		self.alnp = self.render.attachNewNode(alight)
 		self.render.setLight(self.alnp)
 

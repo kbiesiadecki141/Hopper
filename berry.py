@@ -31,47 +31,45 @@ from panda3d.bullet import *
 
 from direct.gui.OnscreenText import OnscreenText
 
-class Coin(object):
+class Berry(object):
 	
-	def __init__(self, render, world, hopper, coinValue, radius, height, posMap):
+	def __init__(self, render, world, hopper, berryValue, radius, height, posMap):
 		self.render = render
 		self.world = world
 		self.hopper = hopper
-		self.coinValue = coinValue
+		self.berryValue = berryValue #if berryVal > 0, call boost; else, call lowerHealth
 		self.radius = radius
 		self.height = height
-		
-		self.coinShape = BulletCylinderShape(radius, height, ZUp)
+
+		self.berryShape = BulletCylinderShape(radius, height, ZUp)
 		self.ghostNode = BulletGhostNode("Coin")
-		self.ghostNode.addShape(self.coinShape)
-		self.coinNP = self.render.attachNewNode(self.ghostNode)
-		self.coinNP.setCollideMask(BitMask32.allOff())
-		self.coinNP.setPos(posMap) #ITF: add to args
-		self.coinNP.setR(90)
+		self.ghostNode.addShape(self.berryShape)
+		self.berryNP = self.render.attachNewNode(self.ghostNode)
+		self.berryNP.setCollideMask(BitMask32.allOff())
+		self.berryNP.setPos(posMap) #ITF: add to args
+		self.berryNP.setR(90)
 		self.world.attachGhost(self.ghostNode)
 		
-		material = Material()
-		material.setShininess(10.0)
-		material.setAmbient((1, 1, 0, 1))
-	
-		self.coinModel = loader.loadModel("models/mint/Mint.egg") 
-		coinTexture = loader.loadTexture("models/mint/goldCoin.jpg") 
-		self.coinModel.setTexture(coinTexture, 1)
-		self.coinModel.reparentTo(self.coinNP)
-		self.coinModel.setScale(14.286*radius)
-		self.coinModel.setPos(0, 0, 0)
-		#self.coinModel.setMaterial(material)
-
-	def collectCoin(self, task):
-		chaChing = base.loader.loadSfx("coinCollect.wav")
-		chaChing.setVolume(1)
-		chaChing.play()
-		self.removeCoin()
-	
-	def removeCoin(self):
-		self.coinNP.detach_node()
+		self.berryModel = loader.loadModel("models/art/cat-shapes/alice-shapes--icosahedron/icosahedron.egg") 
+		berryTexture = loader.loadTexture("models/emTex.jpg")
+		self.berryModel.setTexture(berryTexture, 1)
+		self.berryModel.reparentTo(self.berryNP)
+		self.berryModel.setScale(0.4*radius)
+		self.berryModel.setPos(0, 0, 0)
 		
-
+	def collectBerry(self, task):
+		pUp = base.loader.loadSfx("powerUp.mp3")
+		pUp.setVolume(1)
+		pUp.play()
+		self.removeBerry()
+	
+	def removeBerry(self):
+		self.berryNP.detach_node()
+		
+	def spinBerry(self, task):
+		theta = task.time * 20.0
+		self.berryNP.setH(theta)
+		return task.cont
 
 
 

@@ -39,32 +39,45 @@ class Ocean(object):
 		self.loader = theLoader
 		self.hopper = hopper
 
-		self.liquid = self.loader.loadModel("models/misc/rgbCube")
-		self.liquid.setScale(1000, 1000, 30)
-		self.liquid.setPos(0, 0, -15)
-		self.liquid.setTransparency(TransparencyAttrib.MAlpha)
-		self.liquid.setAlphaScale(0.7)
-		self.liquid.reparentTo(self.render)
-	 	
+		self.worldsize = 50
+		self.seaTex = self.loader.loadTexture('models/water.png')
+
+		x = 0
+		self.setupOcean(False, -50, 5)
+		self.setupOcean(False, 50, 5)
+		self.setupOcean(True, -50, 5)
+		self.setupOcean(True, 50, 5)
 		oceanShape = BulletPlaneShape(Vec3(0, 0, 1), 0)
 		oceanBulletNode = BulletRigidBodyNode("Ocean")
 		oceanBulletNode.addShape(oceanShape)
+		
 		oceanNP = self.render.attachNewNode(oceanBulletNode)
 		oceanNP.setPos(0, 0, -10)
 		self.world.attachRigidBody(oceanBulletNode)
-		oceanModel = self.loader.loadModel("models/square")
-		oceanModel.setScale(1000, 1000, 1)
-		oceanModel.setPos(0, 0, 0)
-		seaTexture = loader.loadTexture("models/Sargasso-sea.png")
-		#seaTexture = loader.loadTexture("models/smallWavesMovie.avi")
-		seaTexture.setWrapU(Texture.WM_repeat)
-		seaTexture.setWrapV(Texture.WM_repeat)
-		oceanModel.setTexture(seaTexture, 1)
-		oceanModel.setTexScale(TextureStage.getDefault(), 50, 50)
-		oceanModel.reparentTo(oceanNP)  #error?
-
-
-
+		
+	def setupOcean(self, isDiag, val, repeat):
+		x = 0
+		y = 0
+		z = 0
+		for j in range(repeat):
+			for i in range(repeat):
+				self.water = self.loader.loadModel('models/square.egg')
+				self.water.setSx(self.worldsize*2)
+				self.water.setSy(self.worldsize*2)
+				self.water.setPos(x,y,z)
+				self.water.setTransparency(TransparencyAttrib.MAlpha)
+				self.water.setAlphaScale(1)
+				newTS = TextureStage('1')
+				self.water.setTexture(newTS, self.seaTex)
+				self.water.setTexScale(newTS,4)
+				self.water.reparentTo(self.render)
+				LerpTexOffsetInterval(self.water,200,(10,0),(0,0), textureStage=newTS).loop()
+				if isDiag:
+					x -= val
+				else:
+					x += val
+			x = 0
+			y += val
 
 
 
