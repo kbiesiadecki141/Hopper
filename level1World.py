@@ -59,9 +59,10 @@ class Level1World(object):
 
 		#----- Setup Visible World -----
 		self.platforms = []
+		self.spinners = []
 		self.berries = []
 		self.coins = []
-
+	
 		self.ocean = Ocean(self.render, self.world, self.loader, self.hopper)
 		self.setupPlatforms()		
 		self.setupCoins()
@@ -97,30 +98,54 @@ class Level1World(object):
 		for i in range(6):
 			platform = Platform(self.render, self.world, heading, Vec3(7, 6, 0.5), Point3(x, y, z)) 
 			self.platforms.append(platform)
+			
+			if i == 3 or i == 5:
+				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+7, y+6, z+2))
+				self.spinners.append(spinner)	
+			
 			x -= 12; z += 2
 		
 		heading = 45
 		for i in range(7):
 			platform = Platform(self.render, self.world, heading, Vec3(7, 6, 0.5), Point3(x, y, z)) 
-			x -= 8; y -= 8; z += 2
 			self.platforms.append(platform)
+			
+			if i == 5 or i == 7:
+				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+7, y+6, z+2))
+				self.spinners.append(spinner)	
+			
+			x -= 8; y -= 8; z += 2
 		
 		heading = -45
 		for i in range(5):
 			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
-			x -= 8; y += 8; z -= 2
 			self.platforms.append(platform)
+			
+			if i == 0 or i == 4:
+				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+7, y+6, z+2))
+				self.spinners.append(spinner)	
+			
+			x -= 8; y += 8; z -= 2
 		
 		heading = 90
 		for i in range(7):
 			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
-			y += 8; z += 2
 			self.platforms.append(platform)
+			
+			if i == 3 or i == 5:
+				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+7, y+6, z+2))
+				self.spinners.append(spinner)	
+			
+			y += 8; z += 2
+	 
+	 	"""
+		spinDex = 4 #ehh?? get it??!! spinDex = spin index?!! X-D
+		for i in range(3):
+			self.spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(0, 0, 0))
+			self.spinner.spinnerBulletNode.reparentTo(self.platforms[spinDex].platformBulletNode)
+			spinDex += 3
+		"""
 
-		#self.spinner = Spinner(self.render, self.world, 90, Vec3(3.5, 0.3, 1), Point3(5, -1, 2))
-		self.spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(0, 0, 0))
-		self.spinner.spinnerBulletNode.reparentTo(self.platforms[1].platformBulletNode)	
-	
 	#def setup
 
 	def setupCoins(self):
