@@ -93,26 +93,36 @@ class Level1World(object):
 		x = -2; y = 3; z = 0
 		
 		heading = 0
-		for i in range(2):
-			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
+		for i in range(6):
+			platform = Platform(self.render, self.world, heading, Vec3(7, 6, 0.5), Point3(x, y, z)) 
 			self.platforms.append(platform)
 			x -= 12; z += 2
 		
 		heading = 45
-		for i in range(3):
+		for i in range(7):
 			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
 			x -= 8; y -= 8; z += 2
 			self.platforms.append(platform)
 		
 		heading = -45
-		for i in range(3):
+		for i in range(5):
 			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
 			x -= 8; y += 8; z -= 2
 			self.platforms.append(platform)
+		
+		heading = 90
+		for i in range(7):
+			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
+			y += 8; z += 2
+			self.platforms.append(platform)
 	
 	def setupCoins(self):
-		coin = Coin(self.render, self.world, self.hopper, 10, 0.35, 0.35, Vec3(3, 10, 3))
-		self.coins.append(coin)
+		index = 0
+		for i in range(4):
+			coin = Coin(self.render, self.world, self.hopper, 10, 0.35, 0.35, Point3(1, 0, 2))
+			coin.coinNP.reparentTo(self.platforms[index].platformBulletNode)
+			self.coins.append(coin)
+			index += 5
 
 	def resetCoins(self):
 		for coin in self.coins:
@@ -120,8 +130,12 @@ class Level1World(object):
 		self.setupCoins()
 
 	def setupBerries(self):
-		berry10 = Berry(self.render, self.world, self.hopper, 10, 0.35, 0.35, Vec3(5, 10, 3)) 
-		self.berries.append(berry10)
+		index = 1
+		for i in range(5):
+			berry1 = Berry(self.render, self.world, self.hopper, 10, 0.35, 0.35, Point3(0, 0, 2))
+			berry1.berryNP.reparentTo(self.platforms[index].platformBulletNode)
+			self.berries.append(berry1)
+			index += 3
 	
 	def resetBerries(self):
 		for berry in self.berries:

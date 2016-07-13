@@ -60,7 +60,7 @@ class Hopper(object):
 
 		self.hopperBulletNode = BulletCharacterControllerNode(hopperShape, 0.4, "Hopper")
 		self.hopperNP = self.render.attachNewNode(self.hopperBulletNode)
-		self.hopperNP.setPos(10, 10, 1)
+		self.hopperNP.setPos(8, 10, 1)
 		self.hopperNP.setH(90)
 		self.hopperNP.setCollideMask(BitMask32.allOn())
 		self.world.attachCharacter(self.hopperBulletNode)
@@ -83,9 +83,9 @@ class Hopper(object):
 		if self.freeze == False:
 			if inputState.isSet('turnLeft'):   omega = 100
 			if inputState.isSet('turnRight'):  omega = -100
-			if inputState.isSet('accelerate'): speed.setY(0.6)
+			if inputState.isSet('accelerate'): speed.setY(0.8)
 			#temporarily disabled!!! do not forget to undo! This includes the speed above!
-			else: speed.setY(0.5)
+			else: speed.setY(0.7)
 		else:
 			self.stand()
 		

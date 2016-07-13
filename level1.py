@@ -169,11 +169,11 @@ class PlayHopper(ShowBase):
 		self.hopper.setHealth(-1)
 		self.q = DirectButton(text = ("Quit", "Quit", "Quit", "disabled"), scale = .08, pos = (0, 0, -0.2), command = self.quit)
 		self.q.resetFrameSize()
-	 	self.b = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, -0.3) , command = self.reset)
-		self.b.resetFrameSize()
+	 	#self.b = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, -0.3) , command = self.reset)
+		#self.b.resetFrameSize()
 
 		self.buttonMap.append(self.q)
-		self.buttonMap.append(self.b)
+		#self.buttonMap.append(self.b)
 
 	def fail(self, task):
 		self.hopper.freeze = True
@@ -181,10 +181,10 @@ class PlayHopper(ShowBase):
 		print "Inside fail; hopper health:"+str(self.hopper.getHealth())
 		self.world.backgroundMusic.stop()
 		self.world.failSound.play()
-		self.c = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, 0) , command = self.reset)
-		self.c.resetFrameSize()
+		#self.c = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, 0) , command = self.reset)
+		#self.c.resetFrameSize()
 
-		self.buttonMap.append(self.c)
+		#self.buttonMap.append(self.c)
 	
 	def quit(self):
 		sys.exit()	
