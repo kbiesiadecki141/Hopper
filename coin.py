@@ -40,7 +40,8 @@ class Coin(object):
 		self.coinValue = coinValue
 		self.radius = radius
 		self.height = height
-		
+		self.volume = 1
+
 		self.coinShape = BulletCylinderShape(radius, height, ZUp)
 		self.ghostNode = BulletGhostNode("Coin")
 		self.ghostNode.addShape(self.coinShape)
@@ -61,16 +62,18 @@ class Coin(object):
 		self.coinModel.setScale(14.286*radius)
 		self.coinModel.setPos(0, 0, 0)
 		#self.coinModel.setMaterial(material)
+	
+	def setVolume(self, volume):
+		self.volume = volume
 
 	def collectCoin(self, task):
 		chaChing = base.loader.loadSfx("coinCollect.wav")
-		chaChing.setVolume(1)
+		chaChing.setVolume(self.volume)
 		chaChing.play()
 		self.removeCoin()
 	
 	def removeCoin(self):
 		self.coinNP.detach_node()
-		
 
 
 

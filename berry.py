@@ -40,13 +40,14 @@ class Berry(object):
 		self.berryValue = berryValue #if berryVal > 0, call boost; else, call lowerHealth
 		self.radius = radius
 		self.height = height
+		self.volume = 1
 
 		self.berryShape = BulletCylinderShape(radius, height, ZUp)
-		self.ghostNode = BulletGhostNode("Coin")
+		self.ghostNode = BulletGhostNode("Berry")
 		self.ghostNode.addShape(self.berryShape)
 		self.berryNP = self.render.attachNewNode(self.ghostNode)
 		self.berryNP.setCollideMask(BitMask32.allOff())
-		self.berryNP.setPos(posMap) #ITF: add to args
+		self.berryNP.setPos(posMap) 
 		self.berryNP.setR(90)
 		self.world.attachGhost(self.ghostNode)
 		
@@ -56,10 +57,13 @@ class Berry(object):
 		self.berryModel.reparentTo(self.berryNP)
 		self.berryModel.setScale(0.4*radius)
 		self.berryModel.setPos(0, 0, 0)
-		
+	
+	def setVolume(self, volume):
+		self.volume = volume
+
 	def collectBerry(self, task):
 		pUp = base.loader.loadSfx("powerUp.mp3")
-		pUp.setVolume(1)
+		pUp.setVolume(self.volume)
 		pUp.play()
 		self.removeBerry()
 	
@@ -67,7 +71,7 @@ class Berry(object):
 		self.berryNP.detach_node()
 		
 	def spinBerry(self, task):
-		theta = task.time * 20.0
+		theta = task.time*20.0
 		self.berryNP.setH(theta)
 		return task.cont
 

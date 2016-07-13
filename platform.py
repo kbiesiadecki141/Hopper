@@ -34,17 +34,18 @@ from direct.gui.OnscreenText import OnscreenText
 
 class Platform(object):
 	
-	def __init__(self, render, world, sizeMap, originMap):
+	def __init__(self, render, world, heading, sizeMap, originMap):
 		self.render = render
 		self.world = world
 
 		self.origin = originMap
 		self.size = sizeMap
-		
+		self.heading = heading
 		shape = BulletBoxShape(self.size*0.55) #ITF: Change size*0.55
 		self.platformBulletNode = self.render.attachNewNode(BulletRigidBodyNode("Platform"))
 		self.platformBulletNode.node().addShape(shape)
 		self.platformBulletNode.setPos(self.origin + self.size)
+		self.platformBulletNode.setH(self.heading)
 		self.platformBulletNode.setCollideMask(BitMask32.allOn())
 
 		self.platformModel = loader.loadModel("models/ModelCollection/EnvBuildingBlocks/stone-cube/stone.egg")

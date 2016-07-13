@@ -38,6 +38,8 @@ class Ocean(object):
 		self.world = world
 		self.loader = theLoader
 		self.hopper = hopper
+		
+		self.waterMap = []
 
 		self.worldsize = 50
 		self.seaTex = self.loader.loadTexture('models/water.png')
@@ -54,7 +56,7 @@ class Ocean(object):
 		oceanNP = self.render.attachNewNode(oceanBulletNode)
 		oceanNP.setPos(0, 0, -10)
 		self.world.attachRigidBody(oceanBulletNode)
-		
+
 	def setupOcean(self, isDiag, val, repeat):
 		x = 0
 		y = 0
@@ -70,14 +72,23 @@ class Ocean(object):
 				newTS = TextureStage('1')
 				self.water.setTexture(newTS, self.seaTex)
 				self.water.setTexScale(newTS,4)
+				self.water.setColorScale(0, 1, 1, 1)
 				self.water.reparentTo(self.render)
-				LerpTexOffsetInterval(self.water,200,(10,0),(0,0), textureStage=newTS).loop()
+				LerpTexOffsetInterval(self.water,200,(20,0),(0,0), textureStage=newTS).loop()
 				if isDiag:
 					x -= val
 				else:
 					x += val
+
+				self.waterMap.append(self.water)
 			x = 0
 			y += val
+		"""	
+		alight = AmbientLight('alight')
+		alight.setColor(VBase4(0.5, 0.5, 1.0, 1.0))
+		alnp  = self.render.attachNewNode(alight)
+		self.water.setLight(alnp)
+		"""
 
 
 

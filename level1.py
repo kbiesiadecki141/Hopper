@@ -28,7 +28,6 @@ from direct.interval.IntervalGlobal import *
 from panda3d.core import *
 from panda3d.bullet import *
 
-#import direct.directbase.DirectStart
 from direct.gui.DirectGui import *
 from direct.gui.OnscreenText import OnscreenText
 from hopper import Hopper
@@ -36,29 +35,32 @@ from oceanWorld import Ocean
 from platform import Platform
 from coin import Coin
 from level1World import Level1World
+
 class PlayHopper(ShowBase):
-	
 	def __init__(self):
 		ShowBase.__init__(self)
+
 		#----- Setup Bullet World -----
 		self.debugNode = BulletDebugNode("Debug")
 		self.debugNode.showWireframe(True)
 		self.debugNP = self.render.attachNewNode(self.debugNode)
-		#self.debugNP.show()
 
 		self.bulletWorld = BulletWorld()
 		self.bulletWorld.setGravity(Vec3(0, 0, -9.81))
 		self.bulletWorld.setDebugNode(self.debugNP.node())
-		
+	
+		#----- Setup Buttons ------
+		self.buttonMap = []
+
 		#----- State Variables -----
 		self.isHelping = False
-		self.amount = 0
+		self.isDebugging = False
 		self.isLit = False
+		self.amount = 0
+		self.isFatiguing = True
+	
 		#----- Setup/Manipulate Hopper -----
-
 		self.hopper = Hopper(self.render, self.bulletWorld, base)
-		self.world = Level1World(self.render, self.loader, base, self.bulletWorld, self.hopper) 
-		#self.freeze = False
 		self.accept('space', self.hopper.doJump)
 		self.accept('arrow_up', self.hopper.loopRunning)
 		self.accept('arrow_up-up', self.hopper.loopWalking)
@@ -66,24 +68,33 @@ class PlayHopper(ShowBase):
 		self.accept('arrow_left', self.hopper.loopWalking)
 		self.accept('h', self.toggleHelp)
 		self.accept('l', self.toggleLight)
+		self.accept('b', self.toggleDebug)
+
+		#----- Setup World -----
+		self.world = Level1World(self.render, self.loader, base, self.bulletWorld, self.hopper) 
 		
-		self.isFatiguing = True
-		
-		#----- Update -----
+		#----- Tasks -----
 		taskMgr.add(self.world.update, "update")
-		taskMgr.add(self.world.berry10.spinBerry, "spinBerry")
-		taskMgr.doMethodLater(3, self.fatigue, "fatigue", uponDeath = self.die)
+		taskMgr.doMethodLater(3, self.fatigue, "fatigue", uponDeath = self.fail)
 		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
-		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.world.coin], appendTask = True, uponDeath = self.world.coin.collectCoin)
-		taskMgr.add(self.detectCollisionForGhosts, "detectBerryCollision", extraArgs = [self.world.berry10], appendTask = True, uponDeath = self.world.berry10.collectBerry)
-		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 		
+		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
+		for berry in self.world.berries:
+			taskMgr.add(berry.spinBerry, "spinBerry")
+			taskMgr.add(self.detectCollisionForGhosts, "detectBerryCollision", extraArgs = [berry], appendTask = True, uponDeath = berry.collectBerry)
+		
+		for coin in self.world.coins:
+			taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [coin], appendTask = True, uponDeath = coin.collectCoin)
+			
+	#----- Hopper Functions -----
 	def fatigue(self, task):
-		self.hopper.lowerHealth(2)
+		if self.hopper.getHealth() > 0:
+			self.hopper.lowerHealth(5)
 		if self.hopper.getHealth() == 0:
 			self.isFatiguing = False
 			return task.done
 		else:
+			print self.hopper.getHealth()
 			self.isFatiguing = True
 			return task.again
 
@@ -91,53 +102,61 @@ class PlayHopper(ShowBase):
 		#---ITF: beautify this ----
 		self.wallet = OnscreenText(text = "Wallet: "+str(self.amount), pos = (-1.1, -0.9), bg = (1, 1, 1, 1), align = TextNode.ACenter, mayChange = True)
 
+	#----- Item Functions -----
 	def detectCollisionForGhosts(self, item, task):
 		# contactTestPair returns a BulletContactResult object
 		contactResult = self.bulletWorld.contactTestPair(self.hopper.getNode(), item.ghostNode) 
 		if len(contactResult.getContacts()) > 0:
 			print "Hopper is in contact with: ", item.ghostNode.getName()
-			if task.name == "detectCoinCollision" or task.name == "detectEndCoinCollision":
+			if task.name == "detectCoinCollision":
+				item.setVolume(1)
 				self.amount += item.coinValue
 				self.displayWallet()
 			else:
+				item.setVolume(1)
 				self.hopper.boostHealth(10)
 				
 			return task.done
 		else:
 			return task.cont
-	
+
+	#----- Replay Functions -----	
 	def reset(self):
-		self.c.destroy()
+		print "Resetting Level 1"
+
+		for button in self.buttonMap:
+			button.destroy()
+		
 		self.hopper.hopperNP.setPos(10, 10, 1)
 		self.hopper.hopperNP.setH(90)
+		if self.isFatiguing == False: 
+			taskMgr.doMethodLater(3, self.fatigue, "fatigue", uponDeath = self.fail)
 		self.hopper.resetHealth()
 		self.hopper.loopWalking()
-		self.world.coin.coinNP = self.render.attachNewNode(self.world.coin.ghostNode)
+		
+		self.world.resetCoins()
+		self.world.resetBerries()
+			
 		self.world.backgroundMusic.play()
 		self.world.failSound.stop()
-		self.world.freeze = False
-		self.amount = 0
-		self.displayWallet()
-		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
-		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.world.coin], appendTask = True, uponDeath = self.world.coin.collectCoin)
-		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
+		self.hopper.freeze = False
+		
+		for coin in self.world.coins:
+			coin.setVolume(0)
+			taskMgr.remove("detectCoinCollision")
+			taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [coin], appendTask = True, uponDeath = coin.collectCoin)
 	
-	def replay(self):
-		self.q.destroy()
-		self.b.destroy()
-		self.hopper.hopperNP.setPos(10, 10, 1)
-		self.hopper.hopperNP.setH(90)
-		self.hopper.resetHealth()
-		self.hopper.loopWalking()
-		self.world.coin.coinNP = self.render.attachNewNode(self.world.coin.ghostNode)
-		self.world.backgroundMusic.play()
-		self.world.failSound.stop()
-		self.world.freeze = False
+		for berry in self.world.berries:
+			berry.setVolume(0)
+			taskMgr.add(berry.spinBerry, "spinBerry")
+			taskMgr.remove("detectBerryCollision")
+			taskMgr.add(self.detectCollisionForGhosts, "detectBerryCollision", extraArgs = [berry], appendTask = True, uponDeath = berry.collectBerry)
+		
+		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
+		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
+		
 		self.amount = 0
 		self.displayWallet()
-		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
-		taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [self.world.coin], appendTask = True, uponDeath = self.world.coin.collectCoin)
-		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 	
 	def levelClear(self, task):
 		#Hooray! Level 2 unlocked
@@ -146,30 +165,31 @@ class PlayHopper(ShowBase):
 		# - Quit
 		# - Play Again
 		# - Next Level
-		self.world.freeze = True	
+		self.hopper.freeze = True	
+		self.hopper.setHealth(-1)
 		self.q = DirectButton(text = ("Quit", "Quit", "Quit", "disabled"), scale = .08, pos = (0, 0, -0.2), command = self.quit)
 		self.q.resetFrameSize()
-	 	self.b = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, -0.3) , command = self.replay)
+	 	self.b = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, -0.3) , command = self.reset)
 		self.b.resetFrameSize()
 
+		self.buttonMap.append(self.q)
+		self.buttonMap.append(self.b)
+
+	def fail(self, task):
+		self.hopper.freeze = True
+		self.hopper.setHealth(-1)
+		print "Inside fail; hopper health:"+str(self.hopper.getHealth())
+		self.world.backgroundMusic.stop()
+		self.world.failSound.play()
+		self.c = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, 0) , command = self.reset)
+		self.c.resetFrameSize()
+
+		self.buttonMap.append(self.c)
+	
 	def quit(self):
 		sys.exit()	
 	
-	def fail(self, task):
-		self.world.freeze = True
-		self.world.backgroundMusic.stop()
-		self.world.failSound.play()
-		self.c = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, 0) , command = self.reset)
-		self.c.resetFrameSize()
-	
-	def die(self, task):
-		self.world.freeze = True
-		self.world.backgroundMusic.stop()
-		self.world.failSound.play()
-		taskMgr.doMethodLater(0.5, self.fatigue, "fatigue", uponDeath = self.fail)
-		self.c = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, 0) , command = self.reset)
-		self.c.resetFrameSize()
-	
+	#----- User Input Functions -----
 	def getHelp(self):
 		self.walk = self.addInstructions(0.7, "[Up Arrow]: ")
 	
@@ -186,17 +206,26 @@ class PlayHopper(ShowBase):
 		else:
 			self.destroyHelp()
 			self.isHelping = False
-			
+	
+	def toggleDebug(self):
+		if self.isDebugging == False:
+			self.debugNP.show()
+			self.isDebugging = True
+		else:
+			self.debugNP.hide()
+			self.isDebugging = False
+
 	def toggleLight(self):
 		if self.isLit == False:
-			self.world.freeze = True
+			self.hopper.freeze = True
 			self.world.addLight()
 			self.isLit = True
-			unfreezeSeq = Sequence(Wait(2.0), Func(self.world.unfreeze))
+			unfreezeSeq = Sequence(Wait(2.0), Func(self.hopper.unfreeze))
 			unfreezeSeq.start()
 		else:
 			self.world.destroyLight()
 			self.isLit = False
+
 game = PlayHopper()
 game.run()
 

@@ -41,6 +41,13 @@ class Hopper(object):
 		self.jumpEffect = self.base.loader.loadSfx("jump.wav")
 		self.jumpEffect.setVolume(0.5) 
 
+		#------ Hopper Controls -----
+		inputState.watchWithModifiers('accelerate', 'arrow_up') 
+		inputState.watchWithModifiers('turnLeft', 'arrow_left')
+		inputState.watchWithModifiers('turnRight', 'arrow_right')
+		
+		self.freeze = False
+
 		#-- Health --
 		#frame = DirectFrame(frameSize = (-1,2.5,-0.2,1),frameColor = (0, 0, 0, 0.5), pos = (-1, 1, 1))
 		self.health = DirectWaitBar(text = "", value = 100, range = 100, pos = (-0.85, 0.93, 0.93), scale = 0.4)
@@ -69,6 +76,23 @@ class Hopper(object):
 		self.hopperModel.setPos(0, 0, -1)
 		self.hopperModel.loop("walk")
 
+	def processInput(self):
+		speed = Vec3(0, 0, 0)
+		omega = 0
+		
+		if self.freeze == False:
+			if inputState.isSet('turnLeft'):   omega = 100
+			if inputState.isSet('turnRight'):  omega = -100
+			if inputState.isSet('accelerate'): speed.setY(0.6)
+			#temporarily disabled!!! do not forget to undo! This includes the speed above!
+			else: speed.setY(0.5)
+		else:
+			self.stand()
+		
+		speed *= 10
+		self.hopperBulletNode.setAngularMovement (omega)
+		self.hopperBulletNode.setLinearMovement(speed, True)
+
 	def doJump(self):
 		self.hopperBulletNode.setMaxJumpHeight(1.0)
 		self.hopperBulletNode.setJumpSpeed(6.0)
@@ -88,6 +112,10 @@ class Hopper(object):
 	
 	def stand(self):
 		self.hopperModel.pose("walk", 6)
+	
+	def unfreeze(self):
+		self.freeze = False
+		self.loopWalking()
 
 	def getNode(self):
 		return self.hopperNP.node()
@@ -109,7 +137,9 @@ class Hopper(object):
 
 	def getHealth(self):
 		return self.health['value']
-
+	
+	def setHealth(self, val):
+		self.health['value'] = val
 
 
 
