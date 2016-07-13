@@ -77,6 +77,7 @@ class PlayHopper(ShowBase):
 		taskMgr.add(self.world.update, "update")
 		taskMgr.doMethodLater(3, self.fatigue, "fatigue", uponDeath = self.fail)
 		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
+		taskMgr.add(self.world.spinner.spin, "spinnerTask")
 		
 		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 		for berry in self.world.berries:
@@ -89,7 +90,7 @@ class PlayHopper(ShowBase):
 	#----- Hopper Functions -----
 	def fatigue(self, task):
 		if self.hopper.getHealth() > 0:
-			self.hopper.lowerHealth(5)
+			self.hopper.lowerHealth(-5)
 		if self.hopper.getHealth() == 0:
 			self.isFatiguing = False
 			return task.done
@@ -112,10 +113,12 @@ class PlayHopper(ShowBase):
 				item.setVolume(1)
 				self.amount += item.coinValue
 				self.displayWallet()
-			else:
+			elif task.name == "detectBerryCollision":
 				item.setVolume(1)
-				self.hopper.boostHealth(10)
-				
+				if item.berryValue > 0:
+					self.hopper.boostHealth(item.berryValue)
+				else:
+					self.hopper.lowerHealth(item.berryValue)
 			return task.done
 		else:
 			return task.cont
@@ -127,20 +130,20 @@ class PlayHopper(ShowBase):
 		for button in self.buttonMap:
 			button.destroy()
 		
-		self.hopper.hopperNP.setPos(10, 10, 1)
+		self.hopper.hopperNP.setPos(8, 10, 1)
 		self.hopper.hopperNP.setH(90)
 		if self.isFatiguing == False: 
 			taskMgr.doMethodLater(3, self.fatigue, "fatigue", uponDeath = self.fail)
 		self.hopper.resetHealth()
 		self.hopper.loopWalking()
 		
-		self.world.resetCoins()
-		self.world.resetBerries()
-			
 		self.world.backgroundMusic.play()
 		self.world.failSound.stop()
 		self.hopper.freeze = False
 		
+		"""
+		self.world.resetCoins()
+		self.world.resetBerries()
 		for coin in self.world.coins:
 			coin.setVolume(0)
 			taskMgr.remove("detectCoinCollision")
@@ -153,9 +156,10 @@ class PlayHopper(ShowBase):
 			taskMgr.add(self.detectCollisionForGhosts, "detectBerryCollision", extraArgs = [berry], appendTask = True, uponDeath = berry.collectBerry)
 		
 		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
+		"""
 		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
 		
-		self.amount = 0
+		#self.amount = 0
 		self.displayWallet()
 	
 	def levelClear(self, task):
@@ -169,11 +173,11 @@ class PlayHopper(ShowBase):
 		self.hopper.setHealth(-1)
 		self.q = DirectButton(text = ("Quit", "Quit", "Quit", "disabled"), scale = .08, pos = (0, 0, -0.2), command = self.quit)
 		self.q.resetFrameSize()
-	 	#self.b = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, -0.3) , command = self.reset)
-		#self.b.resetFrameSize()
+	 	self.b = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, -0.3) , command = self.reset)
+		self.b.resetFrameSize()
 
 		self.buttonMap.append(self.q)
-		#self.buttonMap.append(self.b)
+		self.buttonMap.append(self.b)
 
 	def fail(self, task):
 		self.hopper.freeze = True
@@ -181,10 +185,10 @@ class PlayHopper(ShowBase):
 		print "Inside fail; hopper health:"+str(self.hopper.getHealth())
 		self.world.backgroundMusic.stop()
 		self.world.failSound.play()
-		#self.c = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, 0) , command = self.reset)
-		#self.c.resetFrameSize()
+		self.c = DirectButton(text = ("Restart Level", "Restart Level", "Restart Level", "disabled"), scale = .08, pos = (0, 0, 0) , command = self.reset)
+		self.c.resetFrameSize()
 
-		#self.buttonMap.append(self.c)
+		self.buttonMap.append(self.c)
 	
 	def quit(self):
 		sys.exit()	

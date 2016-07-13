@@ -36,6 +36,7 @@ from oceanWorld import Ocean
 from platform import Platform
 from coin import Coin
 from berry import Berry
+from spinner import Spinner
 
 class Level1World(object):
 	
@@ -100,7 +101,7 @@ class Level1World(object):
 		
 		heading = 45
 		for i in range(7):
-			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
+			platform = Platform(self.render, self.world, heading, Vec3(7, 6, 0.5), Point3(x, y, z)) 
 			x -= 8; y -= 8; z += 2
 			self.platforms.append(platform)
 		
@@ -115,7 +116,13 @@ class Level1World(object):
 			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
 			y += 8; z += 2
 			self.platforms.append(platform)
+
+		#self.spinner = Spinner(self.render, self.world, 90, Vec3(3.5, 0.3, 1), Point3(5, -1, 2))
+		self.spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(0, 0, 0))
+		self.spinner.spinnerBulletNode.reparentTo(self.platforms[1].platformBulletNode)	
 	
+	#def setup
+
 	def setupCoins(self):
 		index = 0
 		for i in range(4):
@@ -131,11 +138,13 @@ class Level1World(object):
 
 	def setupBerries(self):
 		index = 1
+		mult = 1
 		for i in range(5):
-			berry1 = Berry(self.render, self.world, self.hopper, 10, 0.35, 0.35, Point3(0, 0, 2))
+			berry1 = Berry(self.render, self.world, self.hopper, 10*mult, 0.35, 0.35, Point3(0, 0, 2))
 			berry1.berryNP.reparentTo(self.platforms[index].platformBulletNode)
 			self.berries.append(berry1)
 			index += 3
+			mult *= -1
 	
 	def resetBerries(self):
 		for berry in self.berries:
@@ -161,7 +170,7 @@ class Level1World(object):
 		self.render.setLight(self.slnp)
 		
 		self.alight = AmbientLight('alight')
-		self.alight.setColor(VBase4(0.2, 0.4, 1, 1))
+		self.alight.setColor(VBase4(0.2, 0.2, 0.2, 1))
 		self.alnp = self.render.attachNewNode(self.alight)
 		
 		self.render.setLight(self.alnp)

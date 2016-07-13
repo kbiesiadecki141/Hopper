@@ -85,7 +85,7 @@ class Hopper(object):
 			if inputState.isSet('turnRight'):  omega = -100
 			if inputState.isSet('accelerate'): speed.setY(0.8)
 			#temporarily disabled!!! do not forget to undo! This includes the speed above!
-			else: speed.setY(0.7)
+			else: speed.setY(0.6)
 		else:
 			self.stand()
 		
@@ -128,7 +128,7 @@ class Hopper(object):
 
 	def lowerHealth(self, damage):
 		if (self.health['value'] + damage) >= 0:
-			self.health['value'] -= damage
+			self.health['value'] += damage
 		else:
 			self.health['value'] = 0
 

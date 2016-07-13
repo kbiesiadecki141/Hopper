@@ -48,14 +48,27 @@ class Platform(object):
 		self.platformBulletNode.setH(self.heading)
 		self.platformBulletNode.setCollideMask(BitMask32.allOn())
 
+		#----- Setup Light -----
+		self.directionalLight = DirectionalLight( "directionalLight" )
+		self.directionalLight.setColor( Vec4( 1, 1, 1, 1 ) )
+		self.directionalLight.setDirection(Vec3(0, 0, -1))
+		self.directionalLightNP = self.render.attachNewNode(self.directionalLight)
+
+		#----- Platform Model ------
 		self.platformModel = loader.loadModel("models/ModelCollection/EnvBuildingBlocks/stone-cube/stone.egg")
 		self.platformModel.reparentTo(self.platformBulletNode)
 		self.platformModel.setPos(0, 0, 0)
 		self.platformModel.setScale(self.size.x * 1.1, self.size.y * 1.1, self.size.z * 0.625)
-		vt = TextureStage('volcanicTex')
+		self.platformModel.setLight(self.directionalLightNP)
+		
+		self.volcTex = loader.loadTexture("models/165.jpg")
+		self.platformModel.setTexture(self.volcTex, 1)
+	
+		volcNormal = loader.loadTexture("models/165_norm.jpg")
+		vt = TextureStage('vt')
 		vt.setMode(TextureStage.MNormal)
-		volcanicTex = loader.loadTexture("models/volcanicAsh.jpg")
-		self.platformModel.setTexture(volcanicTex, 1) #vt, volcTex
+
+		self.platformModel.setTexture(vt, volcNormal) #vt, volcTex
 		
 		self.world.attachRigidBody(self.platformBulletNode.node())
 

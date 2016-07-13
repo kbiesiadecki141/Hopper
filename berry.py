@@ -57,7 +57,11 @@ class Berry(object):
 		self.berryModel.reparentTo(self.berryNP)
 		self.berryModel.setScale(0.4*radius)
 		self.berryModel.setPos(0, 0, 0)
-	
+
+		if self.berryValue < 0:
+			self.berryModel.setColorScale(1, 0, 0, 1)
+
+
 	def setVolume(self, volume):
 		self.volume = volume
 
