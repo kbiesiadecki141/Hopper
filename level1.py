@@ -77,7 +77,9 @@ class PlayHopper(ShowBase):
 		taskMgr.add(self.world.update, "update")
 		taskMgr.doMethodLater(3, self.fatigue, "fatigue", uponDeath = self.fail)
 		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
-		taskMgr.add(self.world.spinner.spin, "spinnerTask")
+		
+		for spinner in self.world.spinners:
+			taskMgr.add(spinner.spin, "spinnerTask")
 		
 		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 		for berry in self.world.berries:
