@@ -41,6 +41,10 @@ class Berry(object):
 		self.radius = radius
 		self.height = height
 		self.volume = 1
+		self.isGood = True
+
+		if self.berryValue < 0:
+			self.isGood = False
 
 		self.berryShape = BulletCylinderShape(radius, height, ZUp)
 		self.ghostNode = BulletGhostNode("Berry")
@@ -66,9 +70,14 @@ class Berry(object):
 		self.volume = volume
 
 	def collectBerry(self, task):
-		pUp = base.loader.loadSfx("powerUp.mp3")
+		pUp = base.loader.loadSfx("sounds/powerUp.mp3")
+		pDown = base.loader.loadSfx("sounds/powerDown.wav")
 		pUp.setVolume(self.volume)
-		pUp.play()
+		pDown.setVolume(1)
+		if self.isGood:
+			pUp.play()
+		else:
+			pDown.play()
 		self.removeBerry()
 	
 	def removeBerry(self):

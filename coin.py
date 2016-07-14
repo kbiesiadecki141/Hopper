@@ -67,7 +67,7 @@ class Coin(object):
 		self.volume = volume
 
 	def collectCoin(self, task):
-		chaChing = base.loader.loadSfx("coinCollect.wav")
+		chaChing = base.loader.loadSfx("sounds/coinCollect.wav")
 		chaChing.setVolume(self.volume)
 		chaChing.play()
 		self.removeCoin()

@@ -47,32 +47,42 @@ class Platform(object):
 		self.platformBulletNode.setPos(self.origin + self.size)
 		self.platformBulletNode.setH(self.heading)
 		self.platformBulletNode.setCollideMask(BitMask32.allOn())
-
-		#----- Setup Light -----
+		
+		"""
 		self.directionalLight = DirectionalLight( "directionalLight" )
 		self.directionalLight.setColor( Vec4( 1, 1, 1, 1 ) )
-		self.directionalLight.setDirection(Vec3(0, 0, -1))
-		self.directionalLightNP = self.render.attachNewNode(self.directionalLight)
+		self.directionalLight.setDirection(Vec3(0, -0.6, -1))
+		self.directionalLightNP = render.attachNewNode(self.directionalLight)
+		"""
 
 		#----- Platform Model ------
 		self.platformModel = loader.loadModel("models/ModelCollection/EnvBuildingBlocks/stone-cube/stone.egg")
 		self.platformModel.reparentTo(self.platformBulletNode)
 		self.platformModel.setPos(0, 0, 0)
 		self.platformModel.setScale(self.size.x * 1.1, self.size.y * 1.1, self.size.z * 0.625)
-		self.platformModel.setLight(self.directionalLightNP)
+		
+		#self.platformModel.setLight(self.directionalLightNP)   
 		
 		self.volcTex = loader.loadTexture("models/165.jpg")
 		self.platformModel.setTexture(self.volcTex, 1)
-	
-		volcNormal = loader.loadTexture("models/165_norm.jpg")
-		vt = TextureStage('vt')
-		vt.setMode(TextureStage.MNormal)
+		
+		self.volcNormal = loader.loadTexture("models/165_norm.jpg")
+		self.vt = TextureStage('vt')
+		self.vt.setMode(TextureStage.MNormal)
 
-		self.platformModel.setTexture(vt, volcNormal) #vt, volcTex
+		self.platformModel.setTexture(self.volcTex, 1)
+		
+		self.platformModel.setTexture(self.volcTex, 1)
 		
 		self.world.attachRigidBody(self.platformBulletNode.node())
 
-
+	def removeNormal(self):
+		#self.platformModel.clearLight(self.directionalLightNP)
+		self.platformModel.setTexture(self.volcTex, 1)
+		
+		pass
+	def addNormal(self):
+		self.platformModel.setTexture(self.vt, self.volcNormal)
 
 
 

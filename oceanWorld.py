@@ -39,7 +39,7 @@ class Ocean(object):
 		self.loader = theLoader
 		self.hopper = hopper
 		
-		self.waterMap = []
+		self.oceanWaterMap = []
 
 		self.worldsize = 50
 		self.seaTex = self.loader.loadTexture('models/water.png')
@@ -63,31 +63,31 @@ class Ocean(object):
 		z = 0
 		for j in range(repeat):
 			for i in range(repeat):
-				self.water = self.loader.loadModel('models/square.egg')
-				self.water.setSx(self.worldsize*2)
-				self.water.setSy(self.worldsize*2)
-				self.water.setPos(x,y,z)
-				self.water.setTransparency(TransparencyAttrib.MAlpha)
-				self.water.setAlphaScale(1)
+				self.oceanWater = self.loader.loadModel('models/square.egg')
+				self.oceanWater.setSx(self.worldsize*2)
+				self.oceanWater.setSy(self.worldsize*2)
+				self.oceanWater.setPos(x,y,z)
+				self.oceanWater.setTransparency(TransparencyAttrib.MAlpha)
+				self.oceanWater.setAlphaScale(1)
 				newTS = TextureStage('1')
-				self.water.setTexture(newTS, self.seaTex)
-				self.water.setTexScale(newTS,4)
-				self.water.setColorScale(0, 1, 1, 1)
-				self.water.reparentTo(self.render)
-				LerpTexOffsetInterval(self.water,200,(20,0),(0,0), textureStage=newTS).loop()
+				self.oceanWater.setTexture(newTS, self.seaTex)
+				self.oceanWater.setTexScale(newTS,4)
+				self.oceanWater.setColorScale(0, 1, 1, 1)
+				self.oceanWater.reparentTo(self.render)
+				LerpTexOffsetInterval(self.oceanWater,200,(20,0),(0,0), textureStage=newTS).loop()
 				if isDiag:
 					x -= val
 				else:
 					x += val
 
-				self.waterMap.append(self.water)
+				self.oceanWaterMap.append(self.oceanWater)
 			x = 0
 			y += val
 		"""	
 		alight = AmbientLight('alight')
 		alight.setColor(VBase4(0.5, 0.5, 1.0, 1.0))
 		alnp  = self.render.attachNewNode(alight)
-		self.water.setLight(alnp)
+		self.oceanWater.setLight(alnp)
 		"""
 
 

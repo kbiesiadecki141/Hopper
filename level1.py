@@ -75,7 +75,7 @@ class PlayHopper(ShowBase):
 		
 		#----- Tasks -----
 		taskMgr.add(self.world.update, "update")
-		taskMgr.doMethodLater(3, self.fatigue, "fatigue", uponDeath = self.fail)
+		taskMgr.doMethodLater(2.5, self.fatigue, "fatigue", uponDeath = self.fail)
 		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
 		
 		for spinner in self.world.spinners:
@@ -92,7 +92,8 @@ class PlayHopper(ShowBase):
 	#----- Hopper Functions -----
 	def fatigue(self, task):
 		if self.hopper.getHealth() > 0:
-			self.hopper.lowerHealth(-5)
+			self.hopper.lowerHealth(-8)
+		
 		if self.hopper.getHealth() == 0:
 			self.isFatiguing = False
 			return task.done
@@ -157,8 +158,9 @@ class PlayHopper(ShowBase):
 			taskMgr.remove("detectBerryCollision")
 			taskMgr.add(self.detectCollisionForGhosts, "detectBerryCollision", extraArgs = [berry], appendTask = True, uponDeath = berry.collectBerry)
 		
-		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 		"""
+		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
+		
 		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
 		
 		#self.amount = 0
@@ -171,6 +173,10 @@ class PlayHopper(ShowBase):
 		# - Quit
 		# - Play Again
 		# - Next Level
+		self.world.backgroundMusic.stop()
+		winSound = base.loader.loadSfx("sounds/jennyWin.m4a")
+		winSound.play()
+
 		self.hopper.freeze = True	
 		self.hopper.setHealth(-1)
 		self.q = DirectButton(text = ("Quit", "Quit", "Quit", "disabled"), scale = .08, pos = (0, 0, -0.2), command = self.quit)
@@ -197,13 +203,27 @@ class PlayHopper(ShowBase):
 	
 	#----- User Input Functions -----
 	def getHelp(self):
-		self.walk = self.addInstructions(0.7, "[Up Arrow]: ")
+		self.blackFrame = DirectFrame(frameColor=(0, 0, 0, 0.5), frameSize=(-3,3,-3,1),pos=(-1,1,1))
+		self.walk = self.addInstructions(0.3, "[W]: Forward")
+		self.turnLeft = self.addInstructions(0.2, "[A]: Turn Left")
+		self.turnRight = self.addInstructions(0.1, "[D]: Turn Right")
+		self.jump = self.addInstructions(0.0, "[Space]: Jump") 
+		self.theHelp = self.addInstructions(-0.1, "[H]: Help") 
+		self.lighting = self.addInstructions(-0.2, "[L]: Toggle Lighting") 
+		self.debugging = self.addInstructions(-0.3, "[B]: Toggle Debugging") 
 	
 	def destroyHelp(self):
+		self.blackFrame.destroy()
 		self.walk.destroy()
+		self.turnLeft.destroy()
+		self.turnRight.destroy()
+		self.jump.destroy()
+		self.theHelp.destroy()
+		self.lighting.destroy()
+		self.debugging.destroy()
 
 	def addInstructions(self, pos, msg):
-		return OnscreenText(text = msg, style = 1, fg = (1, 1, 1, 1), pos = (0, pos), align= TextNode.ACenter, scale = .05)
+		return OnscreenText(text = msg, style = 1, fg = (1, 1, 1, 1), pos = (0, pos), align= TextNode.ACenter, scale = .1)
 
 	def toggleHelp(self):
 		if self.isHelping == False:

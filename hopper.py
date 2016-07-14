@@ -38,7 +38,7 @@ class Hopper(object):
 		self.world = world
 		self.base = base
 
-		self.jumpEffect = self.base.loader.loadSfx("jump.wav")
+		self.jumpEffect = self.base.loader.loadSfx("sounds/jump.wav")
 		self.jumpEffect.setVolume(0.5) 
 
 		#------ Hopper Controls -----

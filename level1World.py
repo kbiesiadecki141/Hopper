@@ -50,9 +50,9 @@ class Level1World(object):
 		base.disableMouse()
 
 		#----- Play Music -----
-		self.backgroundMusic = base.loader.loadSfx("backgroundMusic.wav")
+		self.backgroundMusic = base.loader.loadSfx("sounds/backgroundMusic.wav")
 		self.backgroundMusic.play()
-		self.failSound = base.loader.loadSfx("fail.wav")
+		self.failSound = base.loader.loadSfx("sounds/fail.wav")
 
 		#------ State Variables -----
 		self.isLit = False
@@ -69,6 +69,12 @@ class Level1World(object):
 		self.setupBerries()
 		self.endToken = Coin(self.render, self.world, self.hopper, 0, 0.6, 0.6, Vec3(0, 0, 1))
 		self.endToken.coinNP.reparentTo(self.platforms[-1].platformBulletNode)
+		
+		#----- Setup Light -----
+		self.directionalLight2 = DirectionalLight( "directionalLight" )
+		self.directionalLight2.setColor( Vec4( 1, 1, 1, 1 ) )
+		self.directionalLight2.setDirection(Vec3(0, 0, -1))
+		self.directionalLightNP = self.render.attachNewNode(self.directionalLight2)
 		
 		#----- Setup Camera -----
 		base.camera.reparentTo(self.hopper.hopperModel)
@@ -96,25 +102,21 @@ class Level1World(object):
 		
 		heading = 0
 		for i in range(6):
-			platform = Platform(self.render, self.world, heading, Vec3(7, 6, 0.5), Point3(x, y, z)) 
+			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
 			self.platforms.append(platform)
 			
 			if i == 3 or i == 5:
-				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+7, y+6, z+2))
+				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+9, y+7, z+2))
 				self.spinners.append(spinner)	
 			
-			x -= 12; z += 2
+			x -= 12; z += 1.8
 		
 		heading = 45
 		for i in range(7):
-			platform = Platform(self.render, self.world, heading, Vec3(7, 6, 0.5), Point3(x, y, z)) 
+			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
 			self.platforms.append(platform)
 			
-			if i == 5 or i == 7:
-				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+7, y+6, z+2))
-				self.spinners.append(spinner)	
-			
-			x -= 8; y -= 8; z += 2
+			x -= 8; y -= 8; z += 1.8
 		
 		heading = -45
 		for i in range(5):
@@ -122,21 +124,17 @@ class Level1World(object):
 			self.platforms.append(platform)
 			
 			if i == 0 or i == 4:
-				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+7, y+6, z+2))
+				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+9, y+7, z+2))
 				self.spinners.append(spinner)	
 			
-			x -= 8; y += 8; z -= 2
+			x -= 8; y += 8; z -= 2.5
 		
 		heading = 90
 		for i in range(7):
-			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
+			platform = Platform(self.render, self.world, heading, Vec3(7, 6, 0.5), Point3(x, y, z)) 
 			self.platforms.append(platform)
 			
-			if i == 3 or i == 5:
-				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+7, y+6, z+2))
-				self.spinners.append(spinner)	
-			
-			y += 8; z += 2
+			y += 8; z += 1.8
 	 
 	 	"""
 		spinDex = 4 #ehh?? get it??!! spinDex = spin index?!! X-D
@@ -170,6 +168,12 @@ class Level1World(object):
 			self.berries.append(berry1)
 			index += 3
 			mult *= -1
+
+			if mult > 0:
+				mult *= 2
+			else:
+				mult /= 2
+
 	
 	def resetBerries(self):
 		for berry in self.berries:
@@ -195,7 +199,7 @@ class Level1World(object):
 		self.render.setLight(self.slnp)
 		
 		self.alight = AmbientLight('alight')
-		self.alight.setColor(VBase4(0.2, 0.2, 0.2, 1))
+		self.alight.setColor(VBase4(0.2, 0.4, 1, 1))
 		self.alnp = self.render.attachNewNode(self.alight)
 		
 		self.render.setLight(self.alnp)
@@ -203,10 +207,16 @@ class Level1World(object):
 		self.render.setShaderAuto()
 		self.slight.setShadowCaster(True)
 
+		for platform in self.platforms:
+			platform.removeNormal()
+
 	def destroyLight(self):
 		self.render.clearLight(self.dlnp)
 		self.render.clearLight(self.alnp)
 		self.render.clearLight(self.slnp)
+		
+		for platform in self.platforms:
+			platform.addNormal()
 
 
 
