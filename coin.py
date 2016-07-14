@@ -73,7 +73,9 @@ class Coin(object):
 		self.removeCoin()
 	
 	def removeCoin(self):
-		self.coinNP.detach_node()
+		self.coinNP.remove_node()
+
+		print "Inside remove coin; removing a coin"
 
 
 

@@ -42,6 +42,9 @@ class Hopper(object):
 		self.jumpEffect.setVolume(0.5) 
 
 		#------ Hopper Controls -----
+		inputState.watchWithModifiers('accelerate', 'w') 
+		inputState.watchWithModifiers('turnLeft', 'a')
+		inputState.watchWithModifiers('turnRight', 'd')
 		inputState.watchWithModifiers('accelerate', 'arrow_up') 
 		inputState.watchWithModifiers('turnLeft', 'arrow_left')
 		inputState.watchWithModifiers('turnRight', 'arrow_right')

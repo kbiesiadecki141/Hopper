@@ -62,10 +62,14 @@ class PlayHopper(ShowBase):
 		#----- Setup/Manipulate Hopper -----
 		self.hopper = Hopper(self.render, self.bulletWorld, base)
 		self.accept('space', self.hopper.doJump)
+		self.accept('w', self.hopper.loopRunning)
+		self.accept('w-up', self.hopper.loopWalking)
+		self.accept('d', self.hopper.loopWalking)
+		self.accept('a', self.hopper.loopWalking)
 		self.accept('arrow_up', self.hopper.loopRunning)
 		self.accept('arrow_up-up', self.hopper.loopWalking)
-		self.accept('arrow_right', self.hopper.loopWalking)
 		self.accept('arrow_left', self.hopper.loopWalking)
+		self.accept('arrow_right', self.hopper.loopWalking)
 		self.accept('h', self.toggleHelp)
 		self.accept('l', self.toggleLight)
 		self.accept('b', self.toggleDebug)
@@ -143,27 +147,28 @@ class PlayHopper(ShowBase):
 		self.world.backgroundMusic.play()
 		self.world.failSound.stop()
 		self.hopper.freeze = False
-		
-		"""
+	
 		self.world.resetCoins()
 		self.world.resetBerries()
+		
+		taskMgr.remove("detectCoinCollision")
 		for coin in self.world.coins:
+			print "Inside reset, adding coin task"
 			coin.setVolume(0)
-			taskMgr.remove("detectCoinCollision")
 			taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [coin], appendTask = True, uponDeath = coin.collectCoin)
-	
+			
+		taskMgr.remove("detectBerryCollision")
+		taskMgr.remove("spinBerryTask")
 		for berry in self.world.berries:
 			berry.setVolume(0)
 			taskMgr.add(berry.spinBerry, "spinBerry")
-			taskMgr.remove("detectBerryCollision")
 			taskMgr.add(self.detectCollisionForGhosts, "detectBerryCollision", extraArgs = [berry], appendTask = True, uponDeath = berry.collectBerry)
 		
-		"""
 		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 		
 		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
 		
-		#self.amount = 0
+		self.amount = 0
 		self.displayWallet()
 	
 	def levelClear(self, task):
