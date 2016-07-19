@@ -32,13 +32,13 @@ from panda3d.bullet import *
 from direct.gui.DirectGui import *
 from direct.gui.OnscreenText import OnscreenText
 from hopper import Hopper
-from oceanWorld import Ocean
+from wizardLair import WizardLair
 from platform import Platform
 from coin import Coin
 from berry import Berry
 from spinner import Spinner
 
-class Level1World(object):
+class Level2World(object):
 	
 	def __init__(self, render, loader, theBase, world, hopper):
 		self.render = render
@@ -63,7 +63,7 @@ class Level1World(object):
 		self.berries = []
 		self.coins = []
 	
-		self.ocean = Ocean(self.render, self.world, self.loader, self.hopper)
+		self.wizardLair = WizardLair(self.render, self.world, self.loader, self.hopper)
 		self.setupPlatforms()		
 		self.setupCoins()
 		self.setupBerries()
@@ -76,6 +76,11 @@ class Level1World(object):
 		self.directionalLight2.setDirection(Vec3(0, 0, -1))
 		self.directionalLightNP = self.render.attachNewNode(self.directionalLight2)
 		
+		#----- Setup Camera -----
+		base.camera.reparentTo(self.hopper.hopperModel)
+		base.camera.setPos(0, 60, 50)#150.0)
+		base.camera.setH(180)
+		base.camera.lookAt(self.hopper.hopperModel)
 	
 	#----- Tasks -----
 	def update(self, task):
@@ -93,35 +98,42 @@ class Level1World(object):
 
 	#----- Setup Item Functions -----	
 	def setupPlatforms(self):
-		x = -2; y = 3; z = 0
+		x = -2; y = 3; z = -1
+		
 		heading = 0
 		for i in range(6):
 			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
 			self.platforms.append(platform)
+			
 			if i == 3 or i == 5:
 				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+9, y+7, z+2))
 				self.spinners.append(spinner)	
+			
 			x -= 12; z += 1.8
 		
 		heading = 45
 		for i in range(7):
 			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
 			self.platforms.append(platform)
+			
 			x -= 8; y -= 8; z += 1.8
 		
 		heading = -45
 		for i in range(5):
 			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
 			self.platforms.append(platform)
+			
 			if i == 0 or i == 4:
 				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+9, y+7, z+2))
 				self.spinners.append(spinner)	
+			
 			x -= 8; y += 8; z -= 2.5
 		
 		heading = 90
 		for i in range(7):
 			platform = Platform(self.render, self.world, heading, Vec3(7, 6, 0.5), Point3(x, y, z)) 
 			self.platforms.append(platform)
+			
 			y += 8; z += 1.8
 	 
 	 	"""
@@ -131,6 +143,8 @@ class Level1World(object):
 			self.spinner.spinnerBulletNode.reparentTo(self.platforms[spinDex].platformBulletNode)
 			spinDex += 3
 		"""
+
+	#def setup
 
 	def setupCoins(self):
 		index = 0
@@ -203,21 +217,9 @@ class Level1World(object):
 		for platform in self.platforms:
 			platform.addNormal()
 
-	def destroyWorld(self):
-		for platform in self.platforms:
-			self.world.removeRigidBody(platform.platformBulletNode.node())
-			platform.platformBulletNode.remove_node()
-		for spinner in self.spinners:
-			self.world.removeRigidBody(spinner.spinnerBulletNode.node())
-			spinner.spinnerBulletNode.remove_node()
-		for coin in self.coins:
-			self.world.removeGhost(coin.ghostNode)
-			coin.removeCoin()
-		
-		self.world.removeRigidBody(self.ocean.oceanBulletNode)
-		self.ocean.oceanNP.remove_node()
-		for ocean in self.ocean.oceanWaterMap:
-			ocean.remove_node()
+
+
+
 
 
 

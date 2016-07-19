@@ -42,6 +42,9 @@ class Berry(object):
 		self.height = height
 		self.volume = 1
 		self.isGood = True
+		
+		self.pUp = base.loader.loadSfx("sounds/powerUp.mp3")
+		self.pDown = base.loader.loadSfx("sounds/powerDown.wav")
 
 		if self.berryValue < 0:
 			self.isGood = False
@@ -70,14 +73,12 @@ class Berry(object):
 		self.volume = volume
 
 	def collectBerry(self, task):
-		pUp = base.loader.loadSfx("sounds/powerUp.mp3")
-		pDown = base.loader.loadSfx("sounds/powerDown.wav")
-		pUp.setVolume(self.volume)
-		pDown.setVolume(1)
+		self.pUp.setVolume(self.volume)
+		self.pDown.setVolume(1)
 		if self.isGood:
-			pUp.play()
+			self.pUp.play()
 		else:
-			pDown.play()
+			self.pDown.play()
 		self.removeBerry()
 	
 	def removeBerry(self):
@@ -88,7 +89,11 @@ class Berry(object):
 		self.berryNP.setH(theta)
 		return task.cont
 
-
+	def stopSound(self):
+		if self.isGood:
+			self.pUp.stop()
+		else:
+			self.pDown.stop()
 
 
 

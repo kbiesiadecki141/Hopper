@@ -13,7 +13,7 @@
 }
 
 <Texture> AO {
-  "beefy_ao.png"
+  "beefy_ao.jpg"
   <Scalar> envtype { MODULATE }
   <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
   <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
@@ -21,7 +21,7 @@
 }
 
 <Texture> Color {
-  "beefy_color.png"
+  "beefy-color.jpg"
   <Scalar> envtype { MODULATE }
   <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
   <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }

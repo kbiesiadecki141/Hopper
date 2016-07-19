@@ -41,6 +41,7 @@ class Coin(object):
 		self.radius = radius
 		self.height = height
 		self.volume = 1
+		self.chaChing = base.loader.loadSfx("sounds/coinCollect.wav")
 
 		self.coinShape = BulletCylinderShape(radius, height, ZUp)
 		self.ghostNode = BulletGhostNode("Coin")
@@ -67,9 +68,8 @@ class Coin(object):
 		self.volume = volume
 
 	def collectCoin(self, task):
-		chaChing = base.loader.loadSfx("sounds/coinCollect.wav")
-		chaChing.setVolume(self.volume)
-		chaChing.play()
+		self.chaChing.setVolume(self.volume)
+		self.chaChing.play()
 		self.removeCoin()
 	
 	def removeCoin(self):
@@ -77,6 +77,8 @@ class Coin(object):
 
 		print "Inside remove coin; removing a coin"
 
+	def stopSound(self):
+		self.chaChing.stop()
 
 
 

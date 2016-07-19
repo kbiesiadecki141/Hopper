@@ -50,12 +50,12 @@ class Ocean(object):
 		self.setupOcean(True, -50, 5)
 		self.setupOcean(True, 50, 5)
 		oceanShape = BulletPlaneShape(Vec3(0, 0, 1), 0)
-		oceanBulletNode = BulletRigidBodyNode("Ocean")
-		oceanBulletNode.addShape(oceanShape)
+		self.oceanBulletNode = BulletRigidBodyNode("Ocean")
+		self.oceanBulletNode.addShape(oceanShape)
 		
-		oceanNP = self.render.attachNewNode(oceanBulletNode)
-		oceanNP.setPos(0, 0, -10)
-		self.world.attachRigidBody(oceanBulletNode)
+		self.oceanNP = self.render.attachNewNode(self.oceanBulletNode)
+		self.oceanNP.setPos(0, 0, -10)
+		self.world.attachRigidBody(self.oceanBulletNode)
 
 	def setupOcean(self, isDiag, val, repeat):
 		x = 0

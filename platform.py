@@ -41,7 +41,7 @@ class Platform(object):
 		self.origin = originMap
 		self.size = sizeMap
 		self.heading = heading
-		shape = BulletBoxShape(self.size*0.55) #ITF: Change size*0.55
+		shape = BulletBoxShape(self.size*0.55)
 		self.platformBulletNode = self.render.attachNewNode(BulletRigidBodyNode("Platform"))
 		self.platformBulletNode.node().addShape(shape)
 		self.platformBulletNode.setPos(self.origin + self.size)
