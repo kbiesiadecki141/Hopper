@@ -31,3 +31,17 @@ class OnscreenInterface():
 
 	def destroyStartScreen(self):
 		self.startScreen.destroy()
+	
+	def startButton(self):
+		#maps = loader.loadModel('maps/button_maps')
+		return DirectButton(text = ("Start", "Start", "Start", "disabled"), scale = .18, pos = (0, 0, -0.3))#, geom = (maps.find('**/button_ready'), maps.find('**/button_click'), maps.find('**/button_rollover'), maps.find('**/button_disabled')))
+
+	def createLevelSelectScreen(self):
+		self.levelSelectScreen = OnscreenImage(image = "images/levelSelect.png", pos = (0, 0, 0), scale = (1.35, 1, 1))
+
+	def destroyLevelSelectScreen(self):
+		self.levelSelectScreen.destroy()
+		
+	def levelSelectButton(self, level, pos):
+	 	return DirectButton(text = ("Level "+str(level), "Level "+str(level), "Level "+str(level), "disabled"), scale = .09, pos = (pos, 0, -0.6))
+			

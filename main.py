@@ -38,6 +38,7 @@ from coin import Coin
 from level1World import Level1World
 from level2World import Level2World
 from onscreenInterface import OnscreenInterface
+
 class PlayHopper(ShowBase):
 	def __init__(self):
 		ShowBase.__init__(self)
@@ -67,15 +68,26 @@ class PlayHopper(ShowBase):
 		#----- Start Screen -----
 		self.ui = OnscreenInterface()
 		self.ui.createStartScreen()
+		self.startBtn = self.ui.startButton()	
+		self.startBtn.configure(command = self.levelSelect)
+		self.buttonMap.append(self.startBtn)
+
 		#----- Level Select -----
 		self.level = 0
-	 	self.b = DirectButton(text = ("Level 1", "Level 1", "Level 1", "disabled"), scale = .08, pos = (0, 0, -0.3) , command = self.setup, extraArgs = [1])
-		self.b.resetFrameSize()
-	 	self.b2 = DirectButton(text = ("Level 2", "Level 2", "Level 2", "disabled"), scale = .08, pos = (0, 0, -0.5) , command = self.setup, extraArgs = [2])
-		self.b2.resetFrameSize()
+	
+	def levelSelect(self):
+		self.destroyButtons()
+		self.ui.destroyStartScreen()
+		self.ui.createLevelSelectScreen()
+	 	self.lev1 = self.ui.levelSelectButton(1, -0.6)
+		self.lev1.configure(command = self.setup, extraArgs = [1])
+		self.lev1.resetFrameSize()
+	 	self.lev2 = self.ui.levelSelectButton(2, 0.55)
+		self.lev2.configure(command = self.setup, extraArgs = [2])
+		self.lev2.resetFrameSize()
 
-		self.buttonMap.append(self.b)
-		self.buttonMap.append(self.b2)
+		self.buttonMap.append(self.lev1)
+		self.buttonMap.append(self.lev2)
 
 	#----- Hopper Functions -----
 	def fatigue(self, task):
@@ -132,9 +144,8 @@ class PlayHopper(ShowBase):
 		self.accept('b', self.toggleDebug)
 
 	def setup(self, level):
-		self.ui.destroyStartScreen()
-		for button in self.buttonMap:
-			button.destroy()
+		self.destroyButtons()
+		self.ui.destroyLevelSelectScreen()
 		#----- Controls -----
 		self.addControls()
 		#----- Setup World -----
@@ -251,13 +262,6 @@ class PlayHopper(ShowBase):
 
 		self.buttonMap.append(self.q)
 		self.buttonMap.append(self.b)
-	 	self.b1 = DirectButton(text = ("Level 1", "Level 1", "Level 1", "disabled"), scale = .08, pos = (0, 0, -0.3) , command = self.changeWorld, extraArgs = [1])
-		self.b1.resetFrameSize()
-	 	self.b2 = DirectButton(text = ("Level 2", "Level 2", "Level 2", "disabled"), scale = .08, pos = (0, 0, -0.5) , command = self.changeWorld, extraArgs = [2])
-		self.b2.resetFrameSize()
-
-		self.buttonMap.append(self.b1)
-		self.buttonMap.append(self.b2)
 	
 	def resetHopper(self):
 		self.hopper.hopperNP.setPos(8, 10, 1)
@@ -276,13 +280,6 @@ class PlayHopper(ShowBase):
 		self.c.resetFrameSize()
 
 		self.buttonMap.append(self.c)
-	 	self.b = DirectButton(text = ("Level 1", "Level 1", "Level 1", "disabled"), scale = .08, pos = (0, 0, -0.3) , command = self.changeWorld, extraArgs = [1])
-		self.b.resetFrameSize()
-	 	self.b2 = DirectButton(text = ("Level 2", "Level 2", "Level 2", "disabled"), scale = .08, pos = (0, 0, -0.5) , command = self.changeWorld, extraArgs = [2])
-		self.b2.resetFrameSize()
-
-		self.buttonMap.append(self.b)
-		self.buttonMap.append(self.b2)
 	
 	def quit(self):
 		sys.exit()	
@@ -347,6 +344,9 @@ class PlayHopper(ShowBase):
 			self.world.destroyLight()
 			self.isLit = False
 
+	def destroyButtons(self):
+		for button in self.buttonMap:
+			button.destroy()
 game = PlayHopper()
 game.run()
 
