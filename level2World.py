@@ -28,10 +28,10 @@ from direct.interval.IntervalGlobal import *
 from panda3d.core import *
 from panda3d.bullet import *
 
-#import direct.directbase.DirectStart
 from direct.gui.DirectGui import *
 from direct.gui.OnscreenText import OnscreenText
 from hopper import Hopper
+from enemy import Enemy
 from wizardLair import WizardLair
 from platform import Platform
 from coin import Coin
@@ -62,14 +62,18 @@ class Level2World(object):
 		self.spinners = []
 		self.berries = []
 		self.coins = []
-	
-		self.wizardLair = WizardLair(self.render, self.world, self.loader, self.hopper)
+		self.enemies = []
+
 		self.setupPlatforms()		
 		self.setupCoins()
 		self.setupBerries()
+		self.setupEnemies()
+
 		self.endToken = Coin(self.render, self.world, self.hopper, 0, 0.6, 0.6, Vec3(0, 0, 1))
 		self.endToken.coinNP.reparentTo(self.platforms[-1].platformBulletNode)
 		
+		self.wizardLair = WizardLair(self.render, self.world, self.loader, self.hopper)
+		self.wizardLair.wizardGate.reparentTo(self.platforms[1].platformBulletNode)	
 		#----- Setup Light -----
 		self.directionalLight2 = DirectionalLight( "directionalLight" )
 		self.directionalLight2.setColor( Vec4( 1, 1, 1, 1 ) )
@@ -78,7 +82,7 @@ class Level2World(object):
 		
 		#----- Setup Camera -----
 		base.camera.reparentTo(self.hopper.hopperModel)
-		base.camera.setPos(0, 60, 50)#150.0)
+		base.camera.setPos(0, 0, 150)#150.0)
 		base.camera.setH(180)
 		base.camera.lookAt(self.hopper.hopperModel)
 	
@@ -95,9 +99,33 @@ class Level2World(object):
 			return task.done
 		else:
 			return task.cont
+	
+	#----- Setup Enemy Functions -----
+	def setupEnemies(self):
+		enemy1 = Enemy(self.render, self.world, base, Point3(0, 0, 1))
+		enemy1.enemyNP.reparentTo(self.platforms[3].platformBulletNode)
+		enemy2 = Enemy(self.render, self.world, base, Point3(0, 0, 1))
+		enemy2.enemyNP.reparentTo(self.platforms[4].platformBulletNode)
+		self.enemies.append(enemy1)
+		self.enemies.append(enemy2)
 
 	#----- Setup Item Functions -----	
 	def setupPlatforms(self):
+		path = "images/wizardFloor.jpg"
+		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-2, 3, -1), tex = path) 
+		self.platforms.append(platform)
+		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-13, 3, -1), tex = path) 
+		self.platforms.append(platform)
+		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-24, 3, 0), roll = 20, tex = path) 
+		self.platforms.append(platform)
+		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-34, 3, 3), tex = path)
+		self.platforms.append(platform)
+		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-46, 3, 4), tex = path)
+		self.platforms.append(platform)
+		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-58, 3, 5), tex = path)
+		self.platforms.append(platform)
+	 	
+		"""
 		x = -2; y = 3; z = -1
 		
 		heading = 0
@@ -110,32 +138,7 @@ class Level2World(object):
 				self.spinners.append(spinner)	
 			
 			x -= 12; z += 1.8
-		
-		heading = 45
-		for i in range(7):
-			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
-			self.platforms.append(platform)
-			
-			x -= 8; y -= 8; z += 1.8
-		
-		heading = -45
-		for i in range(5):
-			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
-			self.platforms.append(platform)
-			
-			if i == 0 or i == 4:
-				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+9, y+7, z+2))
-				self.spinners.append(spinner)	
-			
-			x -= 8; y += 8; z -= 2.5
-		
-		heading = 90
-		for i in range(7):
-			platform = Platform(self.render, self.world, heading, Vec3(7, 6, 0.5), Point3(x, y, z)) 
-			self.platforms.append(platform)
-			
-			y += 8; z += 1.8
-	 
+		"""
 	 	"""
 		spinDex = 4 #ehh?? get it??!! spinDex = spin index?!! X-D
 		for i in range(3):
@@ -147,19 +150,21 @@ class Level2World(object):
 	#def setup
 
 	def setupCoins(self):
+		"""
 		index = 0
 		for i in range(4):
 			coin = Coin(self.render, self.world, self.hopper, 10, 0.35, 0.35, Point3(1, 0, 2))
 			coin.coinNP.reparentTo(self.platforms[index].platformBulletNode)
 			self.coins.append(coin)
 			index += 5
-
+		"""
 	def resetCoins(self):
 		print "Inside coins; NOT removing a coin but initializing list to 0"
 		self.coins = []
 		self.setupCoins()
 
 	def setupBerries(self):
+		"""
 		index = 1
 		mult = 1
 		for i in range(5):
@@ -173,7 +178,7 @@ class Level2World(object):
 				mult *= 2
 			else:
 				mult /= 2
-
+		"""
 	
 	def resetBerries(self):
 		self.berries = []

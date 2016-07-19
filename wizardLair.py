@@ -38,6 +38,23 @@ class WizardLair(object):
 		self.world = world
 		self.loader = theLoader
 		self.hopper = hopper
+
+		self.wizardGate = loader.loadModel("models/gate/gate.egg")
+		self.wizardGate.setPos(0, 0, 1)
+		self.wizardGate.setScale(0.007, 0.007, 0.004)
+		self.wizardGate.setH(90)
+		#wizardGate.place()
+
+		self.fire = loader.loadModel("models/fire/fire.egg")
+		self.fire.reparentTo(self.wizardGate)
+		self.fire.setPos(-600, -300, 0)
+		self.fire.setScale(3)
+		
+		self.fire = loader.loadModel("models/fire/fire.egg")
+		self.fire.reparentTo(self.wizardGate)
+		self.fire.setPos(600, -300, 0)
+		self.fire.setScale(3)
+		#self.fire.place()
 		"""	
 		wizardLairShape = BulletPlaneShape(Vec3(0, 0, 1), 0)
 		wizardLairBulletNode = BulletRigidBodyNode("WizardFloor")

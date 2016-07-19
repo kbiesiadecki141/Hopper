@@ -66,14 +66,18 @@ class PlayHopper(ShowBase):
 		self.winSound = base.loader.loadSfx("sounds/jennyWin.m4a")
 
 		#----- Start Screen -----
+		"""
 		self.ui = OnscreenInterface()
 		self.ui.createStartScreen()
 		self.startBtn = self.ui.startButton()	
 		self.startBtn.configure(command = self.levelSelect)
 		self.buttonMap.append(self.startBtn)
-
+		"""
 		#----- Level Select -----
 		self.level = 0
+
+		#(for developing purposes only), don't forget to uncomment line 152
+		self.setup(2)
 	
 	def levelSelect(self):
 		self.destroyButtons()
@@ -145,7 +149,7 @@ class PlayHopper(ShowBase):
 
 	def setup(self, level):
 		self.destroyButtons()
-		self.ui.destroyLevelSelectScreen()
+		#self.ui.destroyLevelSelectScreen()
 		#----- Controls -----
 		self.addControls()
 		#----- Setup World -----

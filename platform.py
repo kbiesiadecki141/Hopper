@@ -34,18 +34,21 @@ from direct.gui.OnscreenText import OnscreenText
 
 class Platform(object):
 	
-	def __init__(self, render, world, heading, sizeMap, originMap):
+	def __init__(self, render, world, heading, sizeMap, originMap, roll = 0, tex = "models/165.jpg"):
 		self.render = render
 		self.world = world
 
 		self.origin = originMap
 		self.size = sizeMap
 		self.heading = heading
+		self.roll = roll
+
 		shape = BulletBoxShape(self.size*0.55)
 		self.platformBulletNode = self.render.attachNewNode(BulletRigidBodyNode("Platform"))
 		self.platformBulletNode.node().addShape(shape)
 		self.platformBulletNode.setPos(self.origin + self.size)
 		self.platformBulletNode.setH(self.heading)
+		self.platformBulletNode.setR(self.roll)
 		self.platformBulletNode.setCollideMask(BitMask32.allOn())
 		
 		"""
@@ -63,7 +66,7 @@ class Platform(object):
 		
 		#self.platformModel.setLight(self.directionalLightNP)   
 		
-		self.volcTex = loader.loadTexture("models/165.jpg")
+		self.volcTex = loader.loadTexture(tex)
 		self.platformModel.setTexture(self.volcTex, 1)
 		
 		self.volcNormal = loader.loadTexture("models/165_norm.jpg")

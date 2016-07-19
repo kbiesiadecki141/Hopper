@@ -62,6 +62,7 @@ class Level1World(object):
 		self.spinners = []
 		self.berries = []
 		self.coins = []
+		self.enemies = []
 	
 		self.ocean = Ocean(self.render, self.world, self.loader, self.hopper)
 		self.setupPlatforms()		

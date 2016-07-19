@@ -47,7 +47,6 @@ class Enemy(object):
 		h = 1.75
 		w = 0.4
 		
-		"""
 		enemyShape = BulletCapsuleShape(w, h - 2 * w, ZUp)
 
 		self.enemyBulletNode = BulletCharacterControllerNode(enemyShape, 0.4, "Enemy")
@@ -57,26 +56,19 @@ class Enemy(object):
 		self.enemyNP.setCollideMask(BitMask32.allOn())
 		self.world.attachCharacter(self.enemyBulletNode)
 
-		"""
-		shape = BulletBoxShape(Vec3(1, 1, 1))
-		node = BulletRigidBodyNode('Enemy')
-		node.setMass(1000000.0)
-		node.addShape(shape)
-		np = self.render.attachNewNode(node)
-		np.setPos(8, 10, 3)
-		self.world.attachRigidBody(node)
-		
-		
-		self.enemyModel = Actor("models/ralph/ralph.egg", {
-				 'run' : 'models/ralph/ralph-run.egg',
-				 'walk' : 'models/ralph/ralph-walk.egg',
-				 'jump' : 'models/ralph/ralph-jump.egg'})
+		self.enemyModel = Actor("models/art/monster/bvw-f2004--monster/monster1.egg", {
+				 'idle' : 'models/art/monster/bvw-f2004--monster/monster1-idle.egg',
+				 'explode' : 'models/art/monster/bvw-f2004--monster/monster1-explode.egg',
+				 'attackL' : 'models/art/monster/bvw-f2004--monster/monster1-pincer-attack-left.egg',
+				 'attackR' : 'models/art/monster/bvw-f2004--monster/monster1-pincer-attack-right.egg',
+				 'attackT' : 'models/art/monster/bvw-f2004--monster/monster1-tentacle-attack.egg',
+				 'attackLR' : 'models/art/monster/bvw-f2004--monster/monster1-pincer-attack-both.egg'})
 
-		self.enemyModel.reparentTo(np)
+		self.enemyModel.reparentTo(self.enemyNP)
 		self.enemyModel.setScale(0.3048)
 		self.enemyModel.setH(180)
-		self.enemyModel.setPos(0, 0, -1)
-		self.enemyModel.loop("walk")
+		self.enemyModel.setPos(0, 0, 1)
+		self.enemyModel.loop("idle")
 
 	def processInput(self):
 		speed = Vec3(0, 0, 0)
