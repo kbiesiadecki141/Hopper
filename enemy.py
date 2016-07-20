@@ -42,12 +42,15 @@ class Enemy(object):
 		self.hopper = hopper
 		self.idNum = idNum
 		self.strength = strength 
-		
+	
+		self.volume = 1
 		self.turned = False
 		self.mult = 1
 
-		self.jumpEffect = self.base.loader.loadSfx("sounds/jump.wav")
-		self.jumpEffect.setVolume(0.5) 
+		self.attackSound = self.base.loader.loadSfx("sounds/jump.wav")
+		self.attackSound.setVolume(0.5) 
+		self.damageSound = self.base.loader.loadSfx("sounds/jump.wav")
+		self.damageSound.setVolume(0.5) 
 
 		self.freeze = False
 
@@ -105,6 +108,14 @@ class Enemy(object):
 		else:
 			self.strength -= 1
 		self.playAttack()
+		self.damageSound.play()
+	
+	def setVolume(self, volume):
+		self.volume = volume
+
+	def attack(self, task):
+		self.attackSound.play()
+		self.loopAttack()
 
 	def getHealth(self):
 		return self.strength
@@ -112,37 +123,17 @@ class Enemy(object):
 	def playAttack(self):
 		self.enemyModel.setPlayRate(2.0, "attackLR")
 		self.enemyModel.play("attackLR")
+	
+	def loopAttack(self):
+		self.enemyModel.setPlayRate(2.0, "attackLR")
+		self.enemyModel.loop("attackLR")
 
 	def stand(self):
 		self.enemyModel.loop("idle")
 	
 	def getNode(self):
 		return self.enemyNP.node()
-
-	#----- Implement later -----
-	"""
-	def boostHealth(self, boostVal):
-		if (self.health['value'] + boostVal) <= 100:
-			self.health['value'] += boostVal
-		else:
-			self.health['value'] = 100
-
-	def lowerHealth(self, damage):
-		if (self.health['value'] + damage) >= 0:
-			self.health['value'] += damage
-		else:
-			self.health['value'] = 0
-
-	def resetHealth(self):
-		self.health['value'] = 100
-
-	def getHealth(self):
-		return self.health['value']
 	
-	def setHealth(self, val):
-		self.health['value'] = val
-	"""
-
-
-
+	def stopSound(self):
+		self.attackSound.stop()
 

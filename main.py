@@ -194,7 +194,9 @@ class PlayHopper(ShowBase):
 		for coin in self.world.coins:
 			taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [coin], appendTask = True, uponDeath = coin.collectCoin)
 		
-		
+		for enemy in self.world.enemies:
+			taskMgr.add(self.detectCollision, "detectEnemyCollision", extraArgs = [enemy], appendTask = True, uponDeath = enemy.attack)
+
 		self.wallet = OnscreenText(text = "Wallet: "+str(self.amount), pos = (-1.1, -0.9), bg = (1, 1, 1, 1), align = TextNode.ACenter, mayChange = True)
 
 	#----- Item Functions -----
@@ -217,12 +219,27 @@ class PlayHopper(ShowBase):
 		else:
 			return task.cont
 
+	def detectCollision(self, cc, task):
+		# contactTestPair returns a BulletContactResult object
+		if cc.getHealth() != 0:
+			contactResult = self.bulletWorld.contactTestPair(self.hopper.getNode(), cc.getNode()) 
+			if len(contactResult.getContacts()) > 0:
+				print "Hopper is in contact with: ", cc.getNode().getName()
+				if task.name == "detectEnemyCollision":
+					cc.setVolume(1)
+					self.hopper.lowerHealth(-5)
+				return task.done
+			else:
+				return task.cont
+		else:
+			return task.done
 	
 	#----- Task Functions -----
 	def removeTasks(self):
 		taskMgr.remove("update")
 		taskMgr.remove("detectCoinCollision")
 		taskMgr.remove("detectBerryCollision")
+		taskMgr.remove("detectEnemyCollision")
 		taskMgr.remove("spinBerryTask")
 		taskMgr.remove("spinnerTask")
 		taskMgr.remove("updatePicker")
@@ -240,6 +257,10 @@ class PlayHopper(ShowBase):
 			berry.setVolume(0)
 			taskMgr.add(berry.spinBerry, "spinBerry")
 			taskMgr.add(self.detectCollisionForGhosts, "detectBerryCollision", extraArgs = [berry], appendTask = True, uponDeath = berry.collectBerry)
+		
+		for enemy in self.world.enemies:
+			enemy.setVolume(0)
+			taskMgr.add(self.detectCollision, "detectEnemyCollision", extraArgs = [enemy], appendTask = True, uponDeath = enemy.attack)
 		
 		taskMgr.add(self.world.update, "update")
 		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
@@ -323,6 +344,7 @@ class PlayHopper(ShowBase):
 		self.winSound.stop()
 
 	#----- User Input Functions -----
+	#ITF: add help menu to ui
 	def getHelp(self):
 		self.blackFrame = DirectFrame(frameColor=(0, 0, 0, 0.5), frameSize=(-3,3,-3,1),pos=(-1,1,1))
 		self.walk = self.addInstructions(0.3, "[W]: Forward")
@@ -376,10 +398,14 @@ class PlayHopper(ShowBase):
 	def toggleMenu(self):
 		if self.isMenuShowing == False:
 			self.isMenuShowing = True
-			self.levelSelect(self.changeWorld)
-
+			self.ui.createMenu()
+			self.menuBtn = self.ui.menuButton("Level Select", 0)
+			self.menuBtn.configure(command = self.levelSelect, extraArgs = [self.changeWorld])
+			self.menuBtn.resetFrameSize()
+			self.buttonMap.append(self.menuBtn)
 		else:
 			self.isMenuShowing = False
+			self.ui.destroyMenu()
 			self.destroyButtons()
 
 	def destroyButtons(self):

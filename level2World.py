@@ -195,8 +195,6 @@ class Level2World(object):
 			spinDex += 3
 		"""
 
-	#def setup
-
 	def setupCoins(self):
 		"""
 		index = 0

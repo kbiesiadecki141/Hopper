@@ -44,4 +44,22 @@ class OnscreenInterface():
 		
 	def levelSelectButton(self, level, pos):
 	 	return DirectButton(text = ("Level "+str(level), "Level "+str(level), "Level "+str(level), "disabled"), scale = .09, pos = (pos, 0, -0.6))
-			
+		
+	def createMenu(self):
+		self.blackFrame = DirectFrame(frameColor=(0, 0, 0, 0.5), frameSize=(-3,3,-3,1),pos=(-1,1,1))
+
+	def destroyMenu(self):
+		self.blackFrame.destroy()
+
+	def menuButton(self, text, pos):
+		return DirectButton(text=(text,text,text,text), scale = .1, pos = (0, 0, pos))
+		
+
+
+
+
+
+
+
+
+
