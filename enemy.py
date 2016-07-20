@@ -26,6 +26,7 @@ from direct.interval.IntervalGlobal import *
 
 from panda3d.core import *
 from panda3d.bullet import *
+from pandac.PandaModules import CollisionHandlerEvent, CollisionNode, CollisionSphere, CollisionTraverser, BitMask32, CollisionRay
 
 from direct.gui.OnscreenText import OnscreenText
 from direct.gui.DirectGui import *
@@ -33,19 +34,26 @@ from direct.gui.OnscreenText import OnscreenText
 
 class Enemy(object):
 	
-	def __init__(self, render, world, base, originMap):
+	def __init__(self, render, world, base, originMap, hopper, idNum, strength = 2):
 		self.render = render
 		self.world = world
 		self.base = base
 		self.originMap = originMap
+		self.hopper = hopper
+		self.idNum = idNum
+		self.strength = strength 
+		
+		self.turned = False
+		self.mult = 1
 
 		self.jumpEffect = self.base.loader.loadSfx("sounds/jump.wav")
 		self.jumpEffect.setVolume(0.5) 
 
 		self.freeze = False
-		
-		h = 1.75
-		w = 0.4
+
+		#----- Setup Enemy -----
+		h = 2.75
+		w = 0.7
 		
 		enemyShape = BulletCapsuleShape(w, h - 2 * w, ZUp)
 
@@ -65,27 +73,40 @@ class Enemy(object):
 				 'attackLR' : 'models/art/monster/bvw-f2004--monster/monster1-pincer-attack-both.egg'})
 
 		self.enemyModel.reparentTo(self.enemyNP)
-		self.enemyModel.setScale(0.3048)
+		self.enemyModel.setScale(0.4048)
 		self.enemyModel.setH(180)
 		self.enemyModel.setPos(0, 0, 1)
 		self.enemyModel.loop("idle")
 
-	def processInput(self):
-		speed = Vec3(0, 0, 0)
+		self.enemyCollider = self.enemyModel.attachNewNode(CollisionNode('enemyNode'))
+		self.enemyCollider.node().addSolid(CollisionSphere(0, 0, 0, 1))
+		self.enemyCollider.setTag("id", str(self.idNum))
+
+	def pace(self):
+		speed = Vec3(0.8*self.mult, 0, 0)
 		omega = 0
 		
-		if self.freeze == False:
-			if inputState.isSet('turnLeft'):   omega = 100
-			if inputState.isSet('turnRight'):  omega = -100
-			if inputState.isSet('accelerate'): speed.setY(0.85)
-			#temporarily disabled!!! do not forget to undo! This includes the speed above!
-			#else: speed.setY(0.6)
-		else:
-			self.stand()
+		if self.enemyNP.getY() > 1 and self.turned == False:
+			self.mult *= -1
+			self.turned = True
 		
-		speed *= 10
+		if self.enemyNP.getY() < -1 and self.turned:
+			self.mult *= -1
+			self.turned = False
+
 		self.enemyBulletNode.setAngularMovement (omega)
 		self.enemyBulletNode.setLinearMovement(speed, True)
+
+		self.enemyModel.lookAt(self.hopper.hopperModel)
+
+	def lowerHealth(self):
+		if self.strength == 0:
+			self.enemyNP.remove_node()
+		else:
+			self.strength -= 1
+
+	def getHealth(self):
+		return self.strength
 
 	def doJump(self):
 		self.enemyBulletNode.setMaxJumpHeight(1.0)

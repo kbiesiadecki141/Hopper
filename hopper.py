@@ -88,7 +88,7 @@ class Hopper(object):
 			if inputState.isSet('turnRight'):  omega = -100
 			if inputState.isSet('accelerate'): speed.setY(0.85)
 			#temporarily disabled!!! do not forget to undo! This includes the speed above!
-			#else: speed.setY(0.6)
+			else: speed.setY(0.6)
 		else:
 			self.stand()
 		

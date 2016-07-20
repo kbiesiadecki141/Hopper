@@ -146,27 +146,43 @@ class PlayHopper(ShowBase):
 		self.accept('h', self.toggleHelp)
 		self.accept('l', self.toggleLight)
 		self.accept('b', self.toggleDebug)
+	
+	def addMouse(self):
+		#----- Mouse Clicking -----
+		if len(self.world.enemies) != 0:
+			self.accept("mouseRayIntoEnemy", self.world.collideEventIn)
+			self.accept("mouseRayOutEnemy", self.world.collideEventOut)
+			self.accept("mouse1", self.world.mousePick, ['down'])
+			self.accept("mouse1-up", self.world.mousePick, ['up'])
+			print "Added mouse ray functions"
 
 	def setup(self, level):
 		self.destroyButtons()
 		#self.ui.destroyLevelSelectScreen()
 		#----- Controls -----
 		self.addControls()
+
 		#----- Setup World -----
 		self.setWorld(level)
+		
+		self.addMouse()
 		#----- Setup Camera -----
 		base.camera.reparentTo(self.hopper.hopperModel)
 		base.camera.setPos(0, 60, 50)#150.0)
 		base.camera.setH(180)
 		base.camera.lookAt(self.hopper.hopperModel)
+
 		#----- Tasks -----
 		#~ Permanent tasks
 		taskMgr.add(self.world.update, "update")
-		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
 		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 		for spinner in self.world.spinners:
 			taskMgr.add(spinner.spin, "spinnerTask")
+		if len(self.world.enemies) != 0:
+			taskMgr.add(self.world.rayUpdate, "updatePicker")
+			print "Added ray update task"
 		#~ Removable tasks
+		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
 		taskMgr.doMethodLater(2.5, self.fatigue, "fatigue", uponDeath = self.fail)
 		
 		for berry in self.world.berries:
