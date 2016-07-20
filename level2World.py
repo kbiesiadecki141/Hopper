@@ -1,17 +1,17 @@
 """
 **************************************************
-*                                                *
-*  Katelyn Biesiadecki                           *
+*								*
+*  Katelyn Biesiadecki				   *
 *  CS454 Game Programming (Kang, Ijaz)           *
-*                                                *
-*  Start Date: July 6, 2016                      *
-*  Midway Due Date: July 13, 2016                *
-*  Final Due Date: July 23, 2016                 *
-*                                                *
-*  Project Name: Hopper                          *
+*								*
+*  Start Date: July 6, 2016		          *
+*  Midway Due Date: July 13, 2016		    *
+*  Final Due Date: July 23, 2016		     *
+*								*
+*  Project Name: Hopper				  *
 *  Description: This class runs the complete     *
-*               game of Hopper!                  *
-*                                                *
+*		   game of Hopper!		      *
+*								*
 **************************************************
 """
 
@@ -27,6 +27,7 @@ from direct.interval.IntervalGlobal import *
 
 from panda3d.core import *
 from panda3d.bullet import *
+from pandac.PandaModules import CollisionHandlerEvent, CollisionNode, CollisionSphere, CollisionTraverser, BitMask32, CollisionRay
 
 from direct.gui.DirectGui import *
 from direct.gui.OnscreenText import OnscreenText
@@ -85,10 +86,27 @@ class Level2World(object):
 		base.camera.setPos(0, 0, 150)#150.0)
 		base.camera.setH(180)
 		base.camera.lookAt(self.hopper.hopperModel)
-	
+		
+		#----- Collision Handling -----
+		base.cTrav = CollisionTraverser()
+		self.collisionHandler = CollisionHandlerEvent()
+
+		self.pickerNode = CollisionNode('mouseRayCollisionNode')
+		self.pickerNP = base.camera.attachNewNode(self.pickerNode)
+		self.pickerRay = CollisionRay()
+		self.pickerNode.addSolid(self.pickerRay)
+		base.cTrav.addCollider(self.pickerNP, self.collisionHandler)
+		self.collisionHandler.addInPattern("mouseRayIntoEnemy")
+		self.collisionHandler.addOutPattern("mouseRayOutEnemy")
+		
+		self.pickingEnabledObject = None
+
 	#----- Tasks -----
 	def update(self, task):
 		self.hopper.processInput()
+		for enemy in self.enemies:
+			if enemy.getHealth() != 0:
+				enemy.pace()
 		dt = globalClock.getDt()
 		self.world.doPhysics(dt, 10, 1/180.0)
 		return task.cont
@@ -100,14 +118,50 @@ class Level2World(object):
 		else:
 			return task.cont
 	
+	def rayUpdate(self, task):
+		if base.mouseWatcherNode.hasMouse():
+			mPos = base.mouseWatcherNode.getMouse()
+			self.pickerRay.setFromLens(base.camNode, mPos.getX(), mPos.getY())
+		return task.cont
+
 	#----- Setup Enemy Functions -----
 	def setupEnemies(self):
-		enemy1 = Enemy(self.render, self.world, base, Point3(0, 0, 1))
+		enemy1 = Enemy(self.render, self.world, base, Point3(0, 0, 1), self.hopper, 1)
 		enemy1.enemyNP.reparentTo(self.platforms[3].platformBulletNode)
-		enemy2 = Enemy(self.render, self.world, base, Point3(0, 0, 1))
+		enemy2 = Enemy(self.render, self.world, base, Point3(0, 0, 1), self.hopper, 2)
 		enemy2.enemyNP.reparentTo(self.platforms[4].platformBulletNode)
 		self.enemies.append(enemy1)
 		self.enemies.append(enemy2)
+     	
+	def resetEnemies(self):
+		for enemy in self.enemies:
+			enemy.enemyNP.remove_node()
+		self.enemies = []
+		self.setupEnemies()
+
+	def collideEventIn(self, entry):
+		print "Wahoo!"
+		np_from = entry.getFromNodePath()
+		np_into = entry.getIntoNodePath()
+		print "'%s' goes INTO '%s'!\nYou may now click the LMB" % (np_from.getName(), np_into.getName())
+		np_into.getParent().setColor(.6, 0.5, 1.0, 1)
+		self.pickingEnabledObject = np_into
+
+	def collideEventOut(self, entry):
+		print "Outwhoo!"
+		self.pickingEnabledObject = None
+		print "you LEFT enemy alone"
+		np_into = entry.getIntoNodePath()
+		np_into.getParent().setColor(1.0, 1.0, 1.0, 1)
+
+	def mousePick(self, status):
+		print "Inside mouse pick"
+		if self.pickingEnabledObject:
+			if status == 'down':
+				idNum = self.pickingEnabledObject.getTag("id")
+				self.enemies[int(idNum)-1].lowerHealth()
+			if status == 'up':
+				pass
 
 	#----- Setup Item Functions -----	
 	def setupPlatforms(self):
@@ -222,8 +276,19 @@ class Level2World(object):
 		for platform in self.platforms:
 			platform.addNormal()
 
-
-
+	def destroyWorld(self):
+		for platform in self.platforms:
+			self.world.removeRigidBody(platform.platformBulletNode.node())
+			platform.platformBulletNode.remove_node()
+		for spinner in self.spinners:
+			self.world.removeRigidBody(spinner.spinnerBulletNode.node())
+			spinner.spinnerBulletNode.remove_node()
+		for coin in self.coins:
+			self.world.removeGhost(coin.ghostNode)
+			coin.removeCoin()
+		for enemy in self.enemies:
+			enemy.enemyNP.remove_node()
+		
 
 
 

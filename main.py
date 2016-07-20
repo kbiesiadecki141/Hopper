@@ -257,7 +257,8 @@ class PlayHopper(ShowBase):
 	
 		self.world.resetCoins()
 		self.world.resetBerries()
-		
+		self.world.resetEnemies()
+
 		self.addTasks()
 		
 		self.amount = 0

@@ -34,7 +34,7 @@ from direct.gui.OnscreenText import OnscreenText
 
 class Enemy(object):
 	
-	def __init__(self, render, world, base, originMap, hopper, idNum, strength = 2):
+	def __init__(self, render, world, base, originMap, hopper, idNum, strength = 1):
 		self.render = render
 		self.world = world
 		self.base = base
@@ -104,34 +104,18 @@ class Enemy(object):
 			self.enemyNP.remove_node()
 		else:
 			self.strength -= 1
+		self.playAttack()
 
 	def getHealth(self):
 		return self.strength
 
-	def doJump(self):
-		self.enemyBulletNode.setMaxJumpHeight(1.0)
-		self.enemyBulletNode.setJumpSpeed(6.0)
-		self.enemyBulletNode.doJump()
-		self.jumpEffect.play()
-		animationSequence = Sequence(Func(self.playJump), Wait(0.6), Func(self.loopWalking))
-		animationSequence.start()
+	def playAttack(self):
+		self.enemyModel.setPlayRate(2.0, "attackLR")
+		self.enemyModel.play("attackLR")
 
-	def loopWalking(self):
-		self.enemyModel.loop("walk")
-	
-	def playJump(self):
-		self.enemyModel.play("jump")
-
-	def loopRunning(self):
-		self.enemyModel.loop("run")
-	
 	def stand(self):
-		self.enemyModel.pose("walk", 6)
+		self.enemyModel.loop("idle")
 	
-	def unfreeze(self):
-		self.freeze = False
-		self.loopWalking()
-
 	def getNode(self):
 		return self.enemyNP.node()
 
