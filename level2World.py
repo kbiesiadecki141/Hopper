@@ -81,12 +81,6 @@ class Level2World(object):
 		self.directionalLight2.setDirection(Vec3(0, 0, -1))
 		self.directionalLightNP = self.render.attachNewNode(self.directionalLight2)
 		
-		#----- Setup Camera -----
-		base.camera.reparentTo(self.hopper.hopperModel)
-		base.camera.setPos(0, 0, 150)#150.0)
-		base.camera.setH(180)
-		base.camera.lookAt(self.hopper.hopperModel)
-		
 		#----- Collision Handling -----
 		base.cTrav = CollisionTraverser()
 		self.collisionHandler = CollisionHandlerEvent()

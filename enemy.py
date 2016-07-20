@@ -53,7 +53,7 @@ class Enemy(object):
 
 		#----- Setup Enemy -----
 		h = 2.75
-		w = 0.7
+		w = 0.9
 		
 		enemyShape = BulletCapsuleShape(w, h - 2 * w, ZUp)
 

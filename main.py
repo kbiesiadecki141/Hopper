@@ -59,6 +59,7 @@ class PlayHopper(ShowBase):
 		self.isHelping = False
 		self.isDebugging = False
 		self.isLit = False
+		self.isMenuShowing = False
 		self.amount = 0
 		self.isFatiguing = True
 		
@@ -66,28 +67,27 @@ class PlayHopper(ShowBase):
 		self.winSound = base.loader.loadSfx("sounds/jennyWin.m4a")
 
 		#----- Start Screen -----
-		"""
 		self.ui = OnscreenInterface()
 		self.ui.createStartScreen()
 		self.startBtn = self.ui.startButton()	
-		self.startBtn.configure(command = self.levelSelect)
+		self.startBtn.configure(command = self.levelSelect, extraArgs = [self.setup])
 		self.buttonMap.append(self.startBtn)
-		"""
+		
 		#----- Level Select -----
 		self.level = 0
 
 		#(for developing purposes only), don't forget to uncomment line 152
-		self.setup(2)
+		#self.setup(2)
 	
-	def levelSelect(self):
+	def levelSelect(self, command):
 		self.destroyButtons()
 		self.ui.destroyStartScreen()
 		self.ui.createLevelSelectScreen()
 	 	self.lev1 = self.ui.levelSelectButton(1, -0.6)
-		self.lev1.configure(command = self.setup, extraArgs = [1])
+		self.lev1.configure(command = command, extraArgs = [1])
 		self.lev1.resetFrameSize()
 	 	self.lev2 = self.ui.levelSelectButton(2, 0.55)
-		self.lev2.configure(command = self.setup, extraArgs = [2])
+		self.lev2.configure(command = command, extraArgs = [2])
 		self.lev2.resetFrameSize()
 
 		self.buttonMap.append(self.lev1)
@@ -118,15 +118,17 @@ class PlayHopper(ShowBase):
 			self.world = Level2World(self.render, self.loader, base, self.bulletWorld, self.hopper)
 
 	def changeWorld(self, level):
+		self.destroyButtons()
+		self.ui.destroyLevelSelectScreen()
 		self.world.destroyWorld()
 		self.removeTasks()
 		self.stopAllSounds()
 		self.setWorld(level)	
+		self.addMouse()
 		self.addTasks()
-		
-		for button in self.buttonMap:
-			button.destroy()
-
+		if len(self.world.enemies) != 0:
+			taskMgr.add(self.world.rayUpdate, "updatePicker")
+		self.destroyButtons()
 		self.resetHopper()
 		self.amount = 0
 		self.displayWallet(self.amount)
@@ -146,6 +148,7 @@ class PlayHopper(ShowBase):
 		self.accept('h', self.toggleHelp)
 		self.accept('l', self.toggleLight)
 		self.accept('b', self.toggleDebug)
+		self.accept('m', self.toggleMenu)
 	
 	def addMouse(self):
 		#----- Mouse Clicking -----
@@ -158,7 +161,7 @@ class PlayHopper(ShowBase):
 
 	def setup(self, level):
 		self.destroyButtons()
-		#self.ui.destroyLevelSelectScreen()
+		self.ui.destroyLevelSelectScreen()
 		#----- Controls -----
 		self.addControls()
 
@@ -174,14 +177,13 @@ class PlayHopper(ShowBase):
 
 		#----- Tasks -----
 		#~ Permanent tasks
-		taskMgr.add(self.world.update, "update")
 		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 		for spinner in self.world.spinners:
 			taskMgr.add(spinner.spin, "spinnerTask")
+		#~ Removable tasks
 		if len(self.world.enemies) != 0:
 			taskMgr.add(self.world.rayUpdate, "updatePicker")
-			print "Added ray update task"
-		#~ Removable tasks
+		taskMgr.add(self.world.update, "update")
 		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
 		taskMgr.doMethodLater(2.5, self.fatigue, "fatigue", uponDeath = self.fail)
 		
@@ -218,10 +220,12 @@ class PlayHopper(ShowBase):
 	
 	#----- Task Functions -----
 	def removeTasks(self):
+		taskMgr.remove("update")
 		taskMgr.remove("detectCoinCollision")
 		taskMgr.remove("detectBerryCollision")
 		taskMgr.remove("spinBerryTask")
 		taskMgr.remove("spinnerTask")
+		taskMgr.remove("updatePicker")
 		
 	def addTasks(self):
 		if self.isFatiguing == False: 
@@ -237,10 +241,13 @@ class PlayHopper(ShowBase):
 			taskMgr.add(berry.spinBerry, "spinBerry")
 			taskMgr.add(self.detectCollisionForGhosts, "detectBerryCollision", extraArgs = [berry], appendTask = True, uponDeath = berry.collectBerry)
 		
+		taskMgr.add(self.world.update, "update")
 		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)
 		for spinner in self.world.spinners:
 			taskMgr.add(spinner.spin, "spinnerTask")
+		if len(self.world.enemies) != 0:
+			taskMgr.add(self.world.rayUpdate, "updatePicker")
 
 	#----- Replay Functions -----	
 	def reset(self):
@@ -257,7 +264,8 @@ class PlayHopper(ShowBase):
 	
 		self.world.resetCoins()
 		self.world.resetBerries()
-		self.world.resetEnemies()
+		if len(self.world.enemies) != 0:
+			self.world.resetEnemies()
 
 		self.addTasks()
 		
@@ -364,6 +372,15 @@ class PlayHopper(ShowBase):
 		else:
 			self.world.destroyLight()
 			self.isLit = False
+	
+	def toggleMenu(self):
+		if self.isMenuShowing == False:
+			self.isMenuShowing = True
+			self.levelSelect(self.changeWorld)
+
+		else:
+			self.isMenuShowing = False
+			self.destroyButtons()
 
 	def destroyButtons(self):
 		for button in self.buttonMap:
