@@ -43,6 +43,8 @@ class Platform(object):
 		self.heading = heading
 		self.roll = roll
 
+		self.randomStart = random.randint(5, 10)
+
 		shape = BulletBoxShape(self.size*0.55)
 		self.platformBulletNode = self.render.attachNewNode(BulletRigidBodyNode("Platform"))
 		self.platformBulletNode.node().addShape(shape)
@@ -86,6 +88,11 @@ class Platform(object):
 		pass
 	def addNormal(self):
 		self.platformModel.setTexture(self.vt, self.volcNormal)
+	
+	def spinPlatform(self, task):
+		theta = (task.time + self.randomStart)*40.0
+		self.platformBulletNode.setH(theta)
+		return task.cont
 
 
 

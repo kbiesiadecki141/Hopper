@@ -42,6 +42,8 @@ from onscreenInterface import OnscreenInterface
 class PlayHopper(ShowBase):
 	def __init__(self):
 		ShowBase.__init__(self)
+		
+		#base.disableAllAudio()
 
 		#----- Setup Bullet World -----
 		self.debugNode = BulletDebugNode("Debug")
@@ -188,14 +190,18 @@ class PlayHopper(ShowBase):
 		taskMgr.doMethodLater(2.5, self.fatigue, "fatigue", uponDeath = self.fail)
 		
 		for berry in self.world.berries:
-			taskMgr.add(berry.spinBerry, "spinBerry")
+			taskMgr.add(berry.spinBerry, "spinBerryTask")
 			taskMgr.add(self.detectCollisionForGhosts, "detectBerryCollision", extraArgs = [berry], appendTask = True, uponDeath = berry.collectBerry)
 		
 		for coin in self.world.coins:
 			taskMgr.add(self.detectCollisionForGhosts, "detectCoinCollision", extraArgs = [coin], appendTask = True, uponDeath = coin.collectCoin)
 		
 		for enemy in self.world.enemies:
-			taskMgr.add(self.detectCollision, "detectEnemyCollision", extraArgs = [enemy], appendTask = True, uponDeath = enemy.attack)
+			taskMgr.add(self.detectCollision, "detectEnemyCollision", extraArgs = [enemy], appendTask = True)
+	
+		for platform in self.world.spinningPlatforms:
+			taskMgr.add(platform.spinPlatform, "spinPlatformTask")
+			
 
 		self.wallet = OnscreenText(text = "Wallet: "+str(self.amount), pos = (-1.1, -0.9), bg = (1, 1, 1, 1), align = TextNode.ACenter, mayChange = True)
 
@@ -224,11 +230,11 @@ class PlayHopper(ShowBase):
 		if cc.getHealth() != 0:
 			contactResult = self.bulletWorld.contactTestPair(self.hopper.getNode(), cc.getNode()) 
 			if len(contactResult.getContacts()) > 0:
-				print "Hopper is in contact with: ", cc.getNode().getName()
 				if task.name == "detectEnemyCollision":
 					cc.setVolume(1)
-					self.hopper.lowerHealth(-5)
-				return task.done
+					self.hopper.lowerHealth(-0.3)
+					cc.attack()
+				return task.cont
 			else:
 				return task.cont
 		else:
@@ -241,6 +247,7 @@ class PlayHopper(ShowBase):
 		taskMgr.remove("detectBerryCollision")
 		taskMgr.remove("detectEnemyCollision")
 		taskMgr.remove("spinBerryTask")
+		taskMgr.remove("spinPlatformTask")
 		taskMgr.remove("spinnerTask")
 		taskMgr.remove("updatePicker")
 		
@@ -255,13 +262,16 @@ class PlayHopper(ShowBase):
 			
 		for berry in self.world.berries:
 			berry.setVolume(0)
-			taskMgr.add(berry.spinBerry, "spinBerry")
+			taskMgr.add(berry.spinBerry, "spinBerryTask")
 			taskMgr.add(self.detectCollisionForGhosts, "detectBerryCollision", extraArgs = [berry], appendTask = True, uponDeath = berry.collectBerry)
 		
 		for enemy in self.world.enemies:
 			enemy.setVolume(0)
-			taskMgr.add(self.detectCollision, "detectEnemyCollision", extraArgs = [enemy], appendTask = True, uponDeath = enemy.attack)
-		
+			taskMgr.add(self.detectCollision, "detectEnemyCollision", extraArgs = [enemy], appendTask = True)
+	
+		for platform in self.world.spinningPlatforms:
+			taskMgr.add(platform.spinPlatform, "spinPlatformTask")
+	
 		taskMgr.add(self.world.update, "update")
 		taskMgr.add(self.detectCollisionForGhosts, "detectEndCoinCollision", extraArgs = [self.world.endToken], appendTask = True, uponDeath = self.levelClear)
 		taskMgr.add(self.world.simulateWater, "simulateWater", uponDeath = self.fail)

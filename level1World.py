@@ -59,6 +59,7 @@ class Level1World(object):
 
 		#----- Setup Visible World -----
 		self.platforms = []
+		self.spinningPlatforms = []
 		self.spinners = []
 		self.berries = []
 		self.coins = []

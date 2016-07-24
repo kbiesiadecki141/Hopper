@@ -1,17 +1,17 @@
 """
 **************************************************
-*								*
-*  Katelyn Biesiadecki				   *
+*						 *
+*  Katelyn Biesiadecki				 *
 *  CS454 Game Programming (Kang, Ijaz)           *
-*								*
-*  Start Date: July 6, 2016		          *
-*  Midway Due Date: July 13, 2016		    *
-*  Final Due Date: July 23, 2016		     *
-*								*
-*  Project Name: Hopper				  *
+*		                  		 *
+*  Start Date: July 6, 2016		         *
+*  Midway Due Date: July 13, 2016		 *
+*  Final Due Date: July 23, 2016		 *
+*						 *
+*  Project Name: Hopper				 *
 *  Description: This class runs the complete     *
-*		   game of Hopper!		      *
-*								*
+*		   game of Hopper!		 *
+*						 *
 **************************************************
 """
 
@@ -51,7 +51,7 @@ class Level2World(object):
 		base.disableMouse()
 
 		#----- Play Music -----
-		self.backgroundMusic = base.loader.loadSfx("sounds/backgroundMusic.wav")
+		self.backgroundMusic = base.loader.loadSfx("sounds/deathDanceMusic.mp3")
 		self.backgroundMusic.play()
 		self.failSound = base.loader.loadSfx("sounds/fail.wav")
 
@@ -60,6 +60,7 @@ class Level2World(object):
 
 		#----- Setup Visible World -----
 		self.platforms = []
+		self.spinningPlatforms = []
 		self.spinners = []
 		self.berries = []
 		self.coins = []
@@ -75,6 +76,15 @@ class Level2World(object):
 		
 		self.wizardLair = WizardLair(self.render, self.world, self.loader, self.hopper)
 		self.wizardLair.wizardGate.reparentTo(self.platforms[1].platformBulletNode)	
+		self.wizardLair.castle.reparentTo(self.platforms[6].platformBulletNode)
+		self.wizardLair.lair.reparentTo(self.platforms[11].platformBulletNode)
+
+		self.sky = loader.loadModel("models/art/cat-skies/alice-skies--celestial/celestial.egg")
+		self.sky.setPos(0, 0, 0)
+		self.sky.setP(90)
+		self.sky.setScale(1)
+		self.sky.reparentTo(self.render)
+
 		#----- Setup Light -----
 		self.directionalLight2 = DirectionalLight( "directionalLight" )
 		self.directionalLight2.setColor( Vec4( 1, 1, 1, 1 ) )
@@ -99,8 +109,7 @@ class Level2World(object):
 	def update(self, task):
 		self.hopper.processInput()
 		for enemy in self.enemies:
-			if enemy.getHealth() != 0:
-				enemy.pace()
+			if enemy.getHealth() != 0: enemy.pace()
 		dt = globalClock.getDt()
 		self.world.doPhysics(dt, 10, 1/180.0)
 		return task.cont
@@ -126,30 +135,42 @@ class Level2World(object):
 		enemy2.enemyNP.reparentTo(self.platforms[4].platformBulletNode)
 		self.enemies.append(enemy1)
 		self.enemies.append(enemy2)
+
+		#----- Lair Enemies -----
+		enemy = Enemy(self.render, self.world, base, Point3(3, 16, 1), self.hopper, 1, strength = 2, size = 1.3)
+		enemy.enemyNP.reparentTo(self.platforms[11].platformBulletNode)
+		self.enemies.append(enemy)
+		enemy = Enemy(self.render, self.world, base, Point3(3, -16, 1), self.hopper, 1, strength = 2, size = 1.3)
+		enemy.enemyNP.reparentTo(self.platforms[11].platformBulletNode)
+		self.enemies.append(enemy)
+		enemy = Enemy(self.render, self.world, base, Point3(13, 3, 1), self.hopper, 1, strength = 2, size = 1.3)
+		enemy.enemyNP.reparentTo(self.platforms[11].platformBulletNode)
+		self.enemies.append(enemy)
+		enemy = Enemy(self.render, self.world, base, Point3(-13, 3, 1), self.hopper, 1, strength = 2, size = 1.3)
+		enemy.enemyNP.reparentTo(self.platforms[11].platformBulletNode)
+		self.enemies.append(enemy)
+		
      	
 	def resetEnemies(self):
 		for enemy in self.enemies:
 			enemy.enemyNP.remove_node()
 		self.enemies = []
 		self.setupEnemies()
-
+	
 	def collideEventIn(self, entry):
-		print "Wahoo!"
+		print "Selected enemy!"
 		np_from = entry.getFromNodePath()
 		np_into = entry.getIntoNodePath()
-		print "'%s' goes INTO '%s'!\nYou may now click the LMB" % (np_from.getName(), np_into.getName())
 		np_into.getParent().setColor(.6, 0.5, 1.0, 1)
 		self.pickingEnabledObject = np_into
 
 	def collideEventOut(self, entry):
-		print "Outwhoo!"
+		print "Deselected enemy!"
 		self.pickingEnabledObject = None
-		print "you LEFT enemy alone"
 		np_into = entry.getIntoNodePath()
 		np_into.getParent().setColor(1.0, 1.0, 1.0, 1)
 
 	def mousePick(self, status):
-		print "Inside mouse pick"
 		if self.pickingEnabledObject:
 			if status == 'down':
 				idNum = self.pickingEnabledObject.getTag("id")
@@ -166,54 +187,75 @@ class Level2World(object):
 		self.platforms.append(platform)
 		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-24, 3, 0), roll = 20, tex = path) 
 		self.platforms.append(platform)
-		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-34, 3, 3), tex = path)
+		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-38, 3, 3), tex = path)
 		self.platforms.append(platform)
-		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-46, 3, 4), tex = path)
+		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-50, 3, 4), tex = path)
 		self.platforms.append(platform)
-		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-58, 3, 5), tex = path)
+		platform = Platform(self.render, self.world, 0, Vec3(10, 7, 0.5), Point3(-62, 3, 5), tex = path)
+		self.platforms.append(platform)
+		platform = Platform(self.render, self.world, 0, Vec3(30, 30, 0.5), Point3(-72, 3, 6), tex = path)
 		self.platforms.append(platform)
 	 	
-		"""
-		x = -2; y = 3; z = -1
+		x = -68; y = 3; z = 5
 		
 		heading = 0
-		for i in range(6):
-			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z)) 
+		for i in range(4):
+			platform = Platform(self.render, self.world, heading, Vec3(7, 6, 0.5), Point3(x, y, z), tex = path) 
+			self.platforms.append(platform)
+			self.spinningPlatforms.append(platform)
+			
+			x -= 8; z += 1.8
+
+		platform = Platform(self.render, self.world, 0, Vec3(30, 30, 0.5), Point3(x - 40, -15, z), tex = path)
+		self.platforms.append(platform)
+		
+		x -= 40; y = 3
+		
+		heading = 45
+		for i in range(4):
+			platform = Platform(self.render, self.world, heading, Vec3(9, 7, 0.5), Point3(x, y, z), tex = path) 
 			self.platforms.append(platform)
 			
-			if i == 3 or i == 5:
-				spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(x+9, y+7, z+2))
+			if i == 0 or i == 2:
+				spinner = Spinner(self.render, self.world, 90, 25, Vec3(2.2, 0.3, 1), Point3(x+9, y+7, z+2))
 				self.spinners.append(spinner)	
-			
-			x -= 12; z += 1.8
-		"""
-	 	"""
-		spinDex = 4 #ehh?? get it??!! spinDex = spin index?!! X-D
-		for i in range(3):
-			self.spinner = Spinner(self.render, self.world, 90, 14, Vec3(2.2, 0.3, 1), Point3(0, 0, 0))
-			self.spinner.spinnerBulletNode.reparentTo(self.platforms[spinDex].platformBulletNode)
-			spinDex += 3
-		"""
 
+			x -= 10; y -= 10; z += 1.8
+		
 	def setupCoins(self):
-		"""
-		index = 0
+		#----- Castle Coins -----
+		x = 3
+		for i in range(9):
+			coin = Coin(self.render, self.world, self.hopper, 10, 0.35, 0.35, Point3(x, -8, 2))
+			coin.coinNP.reparentTo(self.platforms[6].platformBulletNode)
+			self.coins.append(coin)
+			x -= 2
+
+		#----- Lair Coins -----
+		x = 3
+		for i in range(8):
+			coin = Coin(self.render, self.world, self.hopper, 10, 0.35, 0.35, Point3(x, -12, 2))
+			coin.coinNP.reparentTo(self.platforms[11].platformBulletNode)
+			self.coins.append(coin)
+			x -= 2
+
+		index = 2
 		for i in range(4):
-			coin = Coin(self.render, self.world, self.hopper, 10, 0.35, 0.35, Point3(1, 0, 2))
+			coin = Coin(self.render, self.world, self.hopper, 10, 0.35, 0.35, Point3(0, 0, 2))
 			coin.coinNP.reparentTo(self.platforms[index].platformBulletNode)
 			self.coins.append(coin)
-			index += 5
-		"""
+			index += 4
+
+
 	def resetCoins(self):
 		print "Inside coins; NOT removing a coin but initializing list to 0"
 		self.coins = []
 		self.setupCoins()
 
 	def setupBerries(self):
-		"""
-		index = 1
+		index = 3
 		mult = 1
-		for i in range(5):
+		for i in range(4):
 			berry1 = Berry(self.render, self.world, self.hopper, 10*mult, 0.35, 0.35, Point3(0, 0, 2))
 			berry1.berryNP.reparentTo(self.platforms[index].platformBulletNode)
 			self.berries.append(berry1)
@@ -224,7 +266,6 @@ class Level2World(object):
 				mult *= 2
 			else:
 				mult /= 2
-		"""
 	
 	def resetBerries(self):
 		self.berries = []

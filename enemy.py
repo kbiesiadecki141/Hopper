@@ -34,7 +34,7 @@ from direct.gui.OnscreenText import OnscreenText
 
 class Enemy(object):
 	
-	def __init__(self, render, world, base, originMap, hopper, idNum, strength = 1):
+	def __init__(self, render, world, base, originMap, hopper, idNum, strength = 1, size = 1.2):
 		self.render = render
 		self.world = world
 		self.base = base
@@ -42,21 +42,23 @@ class Enemy(object):
 		self.hopper = hopper
 		self.idNum = idNum
 		self.strength = strength 
+		self.size = size
 	
 		self.volume = 1
 		self.turned = False
+		self.isAttacking = False
 		self.mult = 1
 
-		self.attackSound = self.base.loader.loadSfx("sounds/jump.wav")
-		self.attackSound.setVolume(0.5) 
-		self.damageSound = self.base.loader.loadSfx("sounds/jump.wav")
+		self.attackSound = self.base.loader.loadSfx("sounds/bloodSquirt.mp3")
+		self.attackSound.setVolume(1) 
+		self.damageSound = self.base.loader.loadSfx("sounds/swordSlash.mp3")
 		self.damageSound.setVolume(0.5) 
 
 		self.freeze = False
 
 		#----- Setup Enemy -----
 		h = 2.75
-		w = 0.9
+		w = self.size + 0.2
 		
 		enemyShape = BulletCapsuleShape(w, h - 2 * w, ZUp)
 
@@ -76,17 +78,37 @@ class Enemy(object):
 				 'attackLR' : 'models/art/monster/bvw-f2004--monster/monster1-pincer-attack-both.egg'})
 
 		self.enemyModel.reparentTo(self.enemyNP)
-		self.enemyModel.setScale(0.4048)
+		self.enemyModel.setScale(0.42 * self.size)
 		self.enemyModel.setH(180)
 		self.enemyModel.setPos(0, 0, 1)
 		self.enemyModel.loop("idle")
+		#self.setupPoison()
 
 		self.enemyCollider = self.enemyModel.attachNewNode(CollisionNode('enemyNode'))
 		self.enemyCollider.node().addSolid(CollisionSphere(0, 0, 0, 1))
 		self.enemyCollider.setTag("id", str(self.idNum))
+	
+	def setupPoison(self):
+		shape = BulletSphereShape(2)
+		node = BulletRigidBodyNode('Poison')
+		node.setMass(10.0)
+		node.addShape(shape)
+		self.sphere = self.render.attachNewNode(node)
+		self.sphere.setPos(0, 0, 50)
+		self.world.attachRigidBody(node)
+
+		smileyFace = self.loader.loadModel("models/smiley")
+		smileyFace.reparentTo(self.sphere)
+		smileyFace.setScale(2)
+		
+		self.poison = loader.loadModel("smiley")
+		self.poison.reparentTo(self.enemyModel)
+		self.poison.setColor(1, 1, 1)
+		self.poison.setPos(2.2, 2.5, -1.7)
+		self.poison.setScale(0.3)
 
 	def pace(self):
-		speed = Vec3(0.8*self.mult, 0, 0)
+		speed = Vec3(1.1*self.mult, 0, 0)
 		omega = 0
 		
 		if self.enemyNP.getY() > 1 and self.turned == False:
@@ -96,6 +118,23 @@ class Enemy(object):
 		if self.enemyNP.getY() < -1 and self.turned:
 			self.mult *= -1
 			self.turned = False
+
+		self.enemyBulletNode.setAngularMovement (omega)
+		self.enemyBulletNode.setLinearMovement(speed, True)
+
+		self.enemyModel.lookAt(self.hopper.hopperModel)
+	
+	def square(self):
+		speed = Vec3(1.1*self.mult, 0, 0)
+		omega = 0
+		
+		if self.enemyNP.getY() > 1 and self.turnedLeft == False:
+			self.mult *= -1
+			self.turnedLeft = True
+		
+		if self.enemyNP.getY() < -1 and self.turnedLeft:
+			self.mult *= -1
+			#self.turnedLeft = dwendw setheading to getHeading + 90
 
 		self.enemyBulletNode.setAngularMovement (omega)
 		self.enemyBulletNode.setLinearMovement(speed, True)
@@ -113,9 +152,19 @@ class Enemy(object):
 	def setVolume(self, volume):
 		self.volume = volume
 
-	def attack(self, task):
-		self.attackSound.play()
-		self.loopAttack()
+	def attack(self):
+		if self.isAttacking == False:
+			self.attackSound.play()
+			self.loopAttack()
+			self.isAttacking = True
+	
+	def shootPoison(self, posMap):
+		self.trajectory = ProjectileInterval(self.poison, startPos = Point3(0, 0, 0),
+								endPos = posMap,
+								duration = 1)
+		self.trajectory.play()
+		self.hopper.lowerHealth(-5)
+		
 
 	def getHealth(self):
 		return self.strength

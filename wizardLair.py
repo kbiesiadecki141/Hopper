@@ -40,10 +40,9 @@ class WizardLair(object):
 		self.hopper = hopper
 
 		self.wizardGate = loader.loadModel("models/gate/gate.egg")
-		self.wizardGate.setPos(0, 0, 1)
+		self.wizardGate.setPos(0, 0, 1) #Note: Wizard Gate (and other models) MUST be reparented to a platform for proper placement
 		self.wizardGate.setScale(0.007, 0.007, 0.004)
 		self.wizardGate.setH(90)
-		#wizardGate.place()
 
 		self.fire = loader.loadModel("models/fire/fire.egg")
 		self.fire.reparentTo(self.wizardGate)
@@ -54,7 +53,33 @@ class WizardLair(object):
 		self.fire.reparentTo(self.wizardGate)
 		self.fire.setPos(600, -300, 0)
 		self.fire.setScale(3)
-		#self.fire.place()
+		
+		self.castle = loader.loadModel("models/art/alice-amusement-park--hauntedhouse/hauntedhouse.egg")
+		self.castle.setPos(0, 0, 0)
+		self.castle.setScale(0.15, 0.15, 0.3)
+		self.castle.setH(180)
+		
+		castleShape = BulletBoxShape(Vec3(9, 6, 7))
+		self.castleBulletNode = BulletRigidBodyNode("WizardCastle")
+		self.castleBulletNode.addShape(castleShape)
+		self.castleNP = self.render.attachNewNode(self.castleBulletNode)
+		self.castleNP.setPos(-38, 33, 13)
+		
+		self.world.attachRigidBody(self.castleBulletNode)
+		
+		lairShape = BulletBoxShape(Vec3(4, 8.5, 7))
+		self.lairBulletNode = BulletRigidBodyNode("WizardLair")
+		self.lairBulletNode.addShape(lairShape)
+		self.lairNP = self.render.attachNewNode(self.lairBulletNode)
+		self.lairNP.setPos(-110, 15, 20)
+
+		self.world.attachRigidBody(self.lairBulletNode)
+		
+		self.lair = loader.loadModel("models/Church/Church.egg")
+		self.lair.setPos(0, 0, 1) #Note: Wizard Lair (and other models) MUST be reparented to a platform for proper placement
+		self.lair.setScale(0.3, 0.3, 0.2)
+		self.lair.setH(90)
+
 		"""	
 		wizardLairShape = BulletPlaneShape(Vec3(0, 0, 1), 0)
 		wizardLairBulletNode = BulletRigidBodyNode("WizardFloor")
