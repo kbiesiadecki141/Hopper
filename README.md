@@ -11,14 +11,14 @@ Now, Hopper must climb up the treacherous wizard’s staircase to his lair to re
 ## Basic Gameplay
 ### Controls:
 
-* W: Run
-* A: Turn left
-* D: Turn right
-* Space: Jump
-* Mouse: Click menu choices AND shoot enemies (some enemies require more than one bullet to kill)
-* B: Turn on debug mode
-* H: Help
-* L: Toggle lighting
+* **W**: Run
+* **A**: Turn left
+* **D**: Turn right
+* **Space**: Jump
+* **Mouse**: Click menu choices AND shoot enemies (some enemies require more than one bullet to kill)
+* **B**: Turn on debug mode
+* **H**: Help
+* **L**: Toggle lighting
 
 ### How to Win:
 
@@ -27,12 +27,12 @@ Now, Hopper must climb up the treacherous wizard’s staircase to his lair to re
 3. Do not let your health bar drain to 0.
 
 ### Items:
-* Coins: increase amount of money in your wallet
-* Berries (green icosahedrons): increase your health
-* Poison berries (red icosahedrons): decrease your health
+* **Coins**: increase amount of money in your wallet
+* **Berries** (green icosahedrons): increase your health
+* **Poison berries** (red icosahedrons): decrease your health
 
 ### Enemies:
-* Red monsters: decrease your health by 10 upon collision
+* **Red monsters**: decrease your health by 10 upon collision
 
 
 
