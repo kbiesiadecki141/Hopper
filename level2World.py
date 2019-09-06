@@ -27,7 +27,7 @@ from direct.interval.IntervalGlobal import *
 
 from panda3d.core import *
 from panda3d.bullet import *
-from pandac.PandaModules import CollisionHandlerEvent, CollisionNode, CollisionSphere, CollisionTraverser, BitMask32, CollisionRay
+#from pandac.PandaModules import CollisionHandlerEvent, CollisionNode, CollisionSphere, CollisionTraverser, BitMask32, CollisionRay
 
 from direct.gui.DirectGui import *
 from direct.gui.OnscreenText import OnscreenText
